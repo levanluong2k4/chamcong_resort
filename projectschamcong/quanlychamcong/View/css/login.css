@@ -1,0 +1,381 @@
+  * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
+        height: 100vh;
+    }
+
+    /* Video Background */
+    .video-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+
+    .video-background video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .video-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgb(0 0 0 / 61%) 0%, rgb(44 95 93 / 55%) 100%);
+        z-index: 1;
+    }
+
+    /* Main Container */
+    .login-container {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        padding: 40px;
+
+    }
+
+
+
+    .logo-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(212, 175, 55, 0.9);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        color: white;
+        margin: 0 auto 15px;
+        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+    }
+
+    .logo-text {
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        letter-spacing: 1px;
+    }
+
+    .logo-subtitle {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.85);
+        margin-top: 5px;
+    }
+
+    /* Form Container */
+    .form-container {
+        width: 432px;
+        height: 500px;
+        border-radius: 20px 0px 0px 20px;
+        background: rgba(17, 24, 39, 0.85);
+        backdrop-filter: blur(20px);
+        padding: 40px;
+        color: rgba(243, 244, 246, 1);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .title {
+        text-align: center;
+        font-size: 26px;
+        line-height: 1.4;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: rgba(212, 175, 55, 1);
+    }
+
+    .subtitle {
+        text-align: center;
+        font-size: 13px;
+        color: rgba(156, 163, 175, 1);
+        margin-bottom: 25px;
+    }
+
+    .form {
+        margin-top: 0;
+    }
+
+    .input-group {
+        margin-bottom: 18px;
+    }
+
+    .input-group label {
+        display: block;
+        color: rgba(212, 175, 55, 0.9);
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-wrapper i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(156, 163, 175, 1);
+    }
+
+    .input-group input {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid rgba(55, 65, 81, 1);
+        outline: 0;
+        background-color: rgba(17, 24, 39, 0.8);
+        padding: 12px 15px 12px 45px;
+        color: rgba(243, 244, 246, 1);
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .input-group input:focus {
+        border-color: rgba(212, 175, 55, 0.8);
+        background-color: rgba(17, 24, 39, 0.95);
+    }
+
+    .forgot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        margin: 12px 0 20px 0;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(156, 163, 175, 1);
+    }
+
+    .remember-me input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+    }
+
+    .forgot a {
+        color: rgba(212, 175, 55, 1);
+        text-decoration: none;
+        font-size: 13px;
+        transition: all 0.3s;
+    }
+
+    .forgot a:hover {
+        color: rgba(212, 175, 55, 1);
+        text-decoration: underline;
+    }
+
+    .sign {
+        display: block;
+        width: 100%;
+        background: linear-gradient(135deg, rgba(212, 175, 55, 1) 0%, rgba(184, 134, 11, 1) 100%);
+        padding: 12px;
+        text-align: center;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+
+    .sign:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+    }
+
+    .social-message {
+        display: flex;
+        align-items: center;
+        padding-top: 20px;
+    }
+
+    .line {
+        height: 1px;
+        flex: 1 1 0%;
+        background-color: rgba(55, 65, 81, 1);
+    }
+
+    .social-message .message {
+        padding-left: 12px;
+        padding-right: 12px;
+        font-size: 12px;
+        color: rgba(156, 163, 175, 1);
+    }
+
+    .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 15px;
+    }
+
+    .social-icons .icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        padding: 0;
+        border: 1px solid rgba(55, 65, 81, 1);
+        background-color: rgba(17, 24, 39, 0.6);
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .social-icons .icon:hover {
+        background-color: rgba(212, 175, 55, 0.2);
+        border-color: rgba(212, 175, 55, 0.5);
+        transform: translateY(-3px);
+    }
+
+    .social-icons .icon svg {
+        height: 20px;
+        width: 20px;
+        fill: rgba(212, 175, 55, 1);
+    }
+
+    /* Carousel */
+    .carousel-container {
+        width: 500px;
+        height: 500px;
+        position: relative;
+        border-radius: 0 20px 20px 0;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(212, 175, 55, 0.3);
+        border-left: none;
+    }
+
+    .carousel {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .carousel-item {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+    }
+
+    .carousel-item.active {
+        opacity: 1;
+    }
+
+    .carousel-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .carousel-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+        padding: 30px;
+        color: white;
+    }
+
+    .carousel-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: rgba(212, 175, 55, 1);
+    }
+
+    .carousel-description {
+        font-size: 14px;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .carousel-dots {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .dot.active {
+        background: rgba(212, 175, 55, 1);
+        width: 30px;
+        border-radius: 5px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .login-container {
+            flex-direction: column;
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .carousel-container {
+            width: 100%;
+            max-width: 500px;
+            height: 400px;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .logo-header {
+            position: relative;
+            top: 0;
+            left: 0;
+            transform: none;
+            margin-bottom: 20px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .carousel-container {
+            display: none;
+        }
+
+        .form-container {
+            max-width: 100%;
+        }
+    }
