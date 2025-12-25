@@ -53,6 +53,7 @@ class HomeController
             'Buồng Phòng' => '<i class="fas fa-bed me-2"></i>',
             'Lễ Tân' => '<i class="fas fa-concierge-bell me-2"></i>',
         ];
+        $_SESSION['icon']=$departmentIcons[$objDepartment->getTenPhongBan()];
      
 
 

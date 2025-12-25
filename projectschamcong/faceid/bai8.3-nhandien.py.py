@@ -186,7 +186,7 @@ def load_face_encodings():
         - employee_ids: danh sách ma_nhan_vien tương ứng
         - employee_names: danh sách ho_ten tương ứng
     """
-    PHOTO_FOLDER = "pic2"  # Thư mục chứa ảnh
+    PHOTO_FOLDER = "chamcong_resort/pic2"  # Thư mục chứa ảnh
     
     employees = get_employees_from_db()
     

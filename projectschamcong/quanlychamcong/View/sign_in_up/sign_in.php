@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -9,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resort Rosa Alba - Đăng Nhập</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/thuctap/projectschamcong/quanlychamcong/View/css/login.css">
+    <link rel="stylesheet" href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/View/css/login.css">
 </head>
 
 <body>
@@ -21,47 +18,62 @@
     </div>
     <div class="video-overlay"></div>
 
-
-
     <!-- Main Container -->
     <div class="login-container">
         <!-- Login Form -->
         <div class="form-container">
             <p class="title">Đăng Nhập</p>
             <p class="subtitle">Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục</p>
-          <!-- ✅ ĐÚNG - Đường dẫn tương đối -->
-<form action="?controller=login&action=sign_in" method="post" class="form">
-    <div class="input-group">
-        <label for="email">Email Đăng Nhập</label>
-        <div class="input-wrapper">
-            <i class="fas fa-user"></i>
-            <input type="email" name="email" id="email" placeholder="Nhập email đăng nhập" required>
-        </div>
-    </div>
-    <div class="input-group">
-        <label for="password">Mật Khẩu</label>
-        <div class="input-wrapper">
-            <i class="fas fa-lock"></i>
-            <input type="password" name="mat_khau_hash" id="password" placeholder="Nhập mật khẩu" required>
-        </div>
-    </div>
-    <div class="forgot">
-        <label class="remember-me">
-            <input type="checkbox" id="remember" name="remember">
-            <span>Ghi nhớ đăng nhập</span>
-        </label>
-        <a href="#">Quên mật khẩu?</a>
-    </div>
-    <button type="submit" class="sign">Đăng Nhập</button>
-    
-</form>
+            
+         
+            <form id="loginForm" action="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=login&action=sign_in" method="post" class="form">
+                
+           
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                
+                <div class="input-group">
+                    <label for="email">Email Đăng Nhập</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user icon_input"></i>
+                        <input type="email" name="email" id="email" placeholder="Nhập email đăng nhập" 
+                               value="<?php echo $_SESSION['old_email'] ?? ''; ?>" required>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">Mật Khẩu</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock icon_input"></i>
+                    
+                        <input type="password" name="password" id="password" placeholder="Nhập mật khẩu" required>
+                     
+                        <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+                    </div>
+                </div>
+                
+                <div class="forgot">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember" name="remember" value="1">
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+                    <a href="?controller=login&action=forgot_password">Quên mật khẩu?</a>
+                </div>
+                
+              
+                <button type="submit" class="sign" id="loginBtn">
+                    <span class="btn-text">Đăng Nhập</span>
+                    <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
+                    </span>
+                </button>
+            </form>
         </div>
 
-        <!-- Image Carousel -->
+        <!-- Image Carousel (giữ nguyên) -->
         <div class="carousel-container">
             <div class="carousel">
                 <div class="carousel-item active">
-                    <img src="../../img/vocuc.jpg" alt="Resort Pool">
+                    <img src="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/img/vocuc.jpg" alt="Resort Pool">
                     <div class="carousel-overlay">
                         <div class="carousel-title">Bể Bơi Vô Cực</div>
                         <div class="carousel-description">Thư giãn tại bể bơi vô cực với view biển tuyệt đẹp, tận hưởng
@@ -69,7 +81,7 @@
                     </div>
                 </div>
                 <div class="carousel-item">
-                    <img src="../../img/PDT11-scaled.jpg" alt="Luxury Room">
+                    <img src="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/img/PDT11-scaled.jpg" alt="Luxury Room">
                     <div class="carousel-overlay">
                         <div class="carousel-title">Phòng Nghỉ Cao Cấp</div>
                         <div class="carousel-description">Các phòng được thiết kế tinh tế với đầy đủ tiện nghi hiện đại,
@@ -77,7 +89,7 @@
                     </div>
                 </div>
                 <div class="carousel-item">
-                    <img src="../../img/swim.jpg" alt="Luxury Room">
+                    <img src="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/img/swim.jpg" alt="Luxury Room">
                     <div class="carousel-overlay">
                         <div class="carousel-title">Quầy pool Side Bar</div>
                         <div class="carousel-description">Một nơi tuyệt vời để quý khách tận hưởng những thức uống mát
@@ -86,7 +98,7 @@
                     </div>
                 </div>
                 <div class="carousel-item">
-                    <img src="../../img/SPA.jpg" alt="Spa">
+                    <img src="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/img/SPA.jpg" alt="Spa">
                     <div class="carousel-overlay">
                         <div class="carousel-title">Spa & Massage</div>
                         <div class="carousel-description">Dịch vụ spa đẳng cấp quốc tế với các liệu trình chăm sóc sắc
@@ -94,7 +106,7 @@
                     </div>
                 </div>
                 <div class="carousel-item">
-                    <img src="../../img/nhahang.jpg" alt="Restaurant">
+                    <img src="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/img/nhahang.jpg" alt="Restaurant">
                     <div class="carousel-overlay">
                         <div class="carousel-title">Nhà Hàng Cao Cấp</div>
                         <div class="carousel-description">Thưởng thức ẩm thực đa quốc gia do các đầu bếp nổi tiếng thế
@@ -102,7 +114,7 @@
                     </div>
                 </div>
                 <div class="carousel-item">
-                    <img src="../../img/tuantrangmat.jpg" alt="Restaurant">
+                    <img src="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/img/tuantrangmat.jpg" alt="Restaurant">
                     <div class="carousel-overlay">
                         <div class="carousel-title">Kỳ Nghỉ Trăng Mật</div>
                         <div class="carousel-description">Xin chúc mừng và cùng chia sẻ niềm hạnh phúc với các Bạn – đôi
@@ -111,7 +123,7 @@
                     </div>
                 </div>
                 <div class="carousel-item">
-                    <img src="../../img/bietthu.jpg" alt="Restaurant">
+                    <img src="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/img/bietthu.jpg" alt="Restaurant">
                     <div class="carousel-overlay">
                         <div class="carousel-title">Biệt Thự 3 Phòng Ngủ
                             Hướng Biển</div>
@@ -131,6 +143,7 @@
                 <span class="dot" onclick="currentSlide(6)"></span>
             </div>
         </div>
+   
     </div>
 
     <script>
@@ -140,12 +153,9 @@
         video.muted = true;
         video.play().catch(function(error) {
             console.log('Video autoplay failed:', error);
-            // Retry play on user interaction
             document.addEventListener('click', function() {
                 video.play();
-            }, {
-                once: true
-            });
+            }, { once: true });
         });
     });
 
@@ -158,16 +168,11 @@
     function showSlide(index) {
         items.forEach((item, i) => {
             item.classList.remove('active');
-            if (i === index) {
-                item.classList.add('active');
-            }
+            if (i === index) item.classList.add('active');
         });
-
         dots.forEach((dot, i) => {
             dot.classList.remove('active');
-            if (i === index) {
-                dot.classList.add('active');
-            }
+            if (i === index) dot.classList.add('active');
         });
     }
 
@@ -181,11 +186,115 @@
         showSlide(currentIndex);
     }
 
-    // Auto-advance carousel every 4 seconds
     setInterval(nextSlide, 4000);
 
-    // Login form handling
-   
+
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    }
+
+    // ✅ Login form handling với AJAX
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const errorMessage = document.getElementById('errorMessage');
+    const btnText = loginBtn.querySelector('.btn-text');
+    const btnLoading = loginBtn.querySelector('.btn-loading');
+
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // Ngăn form submit mặc định
+        
+        // Hide error message
+        errorMessage.style.display = 'none';
+        
+        // Show loading state
+        loginBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-block';
+        
+        // Get form data
+        const formData = new FormData(this);
+        
+        fetch('/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=login&action=sign_in', {
+    method: 'POST',
+    body: formData
+})
+.then(response => {
+    // ✅ Log để xem response trước
+    return response.text().then(text => {
+        console.log('Raw response:', text);
+        
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('JSON parse error:', e);
+            console.error('Response text:', text);
+            throw new Error('Server trả về không phải JSON');
+        }
+    });
+})
+        .then(data => {
+            if (data.success) {
+             
+                
+                // Hiển thị thông báo thành công (optional)
+                errorMessage.className = 'success-message';
+                errorMessage.textContent = data.message || 'Đăng nhập thành công!';
+                errorMessage.style.display = 'block';
+                
+                // Chuyển hướng sau 500ms
+                setTimeout(() => {
+                    window.location.href = '/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=home&action=index';
+                }, 500);
+                
+            } else {
+               
+                
+                // Reset button state
+                loginBtn.disabled = false;
+                btnText.style.display = 'inline-block';
+                btnLoading.style.display = 'none';
+                
+                // Hiển thị lỗi
+                errorMessage.className = 'error-message';
+                errorMessage.textContent = data.message || 'Đăng nhập thất bại!';
+                errorMessage.style.display = 'block';
+                
+                // Focus vào field bị lỗi
+                if (data.error_type === 'password') {
+                    passwordInput.focus();
+                    passwordInput.select();
+                } else if (data.error_type === 'email_not_found') {
+                    document.getElementById('email').focus();
+                }
+                
+                // Auto hide error sau 5 giây
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+            // Reset button state
+            loginBtn.disabled = false;
+            btnText.style.display = 'inline-block';
+            btnLoading.style.display = 'none';
+            
+            // Hiển thị lỗi
+            errorMessage.className = 'error-message';
+            errorMessage.textContent = 'Có lỗi xảy ra, vui lòng thử lại!';
+            errorMessage.style.display = 'block';
+        });
+    });
     </script>
 </body>
 

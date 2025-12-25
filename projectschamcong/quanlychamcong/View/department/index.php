@@ -7,95 +7,21 @@
     <title>Resort Rosa Alba - Department Manager Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/thuctap/projectschamcong/quanlychamcong/View/css/basic.css">
-    <link rel="stylesheet" href="/thuctap/projectschamcong/quanlychamcong/View/css/department.css">
+    <link rel="stylesheet" href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/View/css/basic.css">
+    <link rel="stylesheet" href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/View/css/department.css">
 </head>
 <style>
-  
+
 </style>
 
 <body>
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-container">
-                <div class="logo">
-
-                </div>
-                <div>
-                    <div class="brand-name">Resort Rosa Alba</div>
-                    <div class="brand-subtitle">Hệ Thống Quản Lý</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="user-info">
-            <div class="user-avatar"
-            style="background-image: url(/pic2/<?php echo $objEmployee->getAnhDaiDen()?>);"
-            >
-               
-            </div>
-            <div class="user-name"><?php echo $objEmployee->getHoTen() ?></div>
-            <div class="user-role"><?php echo $objEmployee->getVaiTro() ?></div>
-            <div class="dept-badge">
-                <?php echo $departmentIcons[$objDepartment->getTenPhongBan()]; 
-                echo $objDepartment->getTenPhongBan(); 
-                ?>
-            </div>
-        </div>
-
-        <div class="nav-menu">
-            <a href="#" class="nav-item active">
-                <i class="fas fa-home"></i>
-                <span>Trang Chủ</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Phân Ca Làm Việc</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-file-invoice"></i>
-                <span>Đơn Xin Nghỉ</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-users"></i>
-                <span>Nhân Viên Của Tôi</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-clock"></i>
-                <span>Điều Chỉnh Giờ</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-chart-bar"></i>
-                <span>Báo Cáo Bộ Phận</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-user-circle"></i>
-                <span>Hồ Sơ Cá Nhân</span>
-            </a>
-        </div>
-    </div>
+    <?php require_once __DIR__ . '/../component/navbar.php'; ?>
 
     <!-- Main Content -->
     <div class="main-content">
         <!-- Topbar -->
-        <div class="topbar">
-            <div>
-                <div class="page-title">
-                    <i class="fas fa-home"></i> Trang Chủ Quản Lý
-                </div>
-                <div class="dept-title">Bộ Phận Dịch Vụ Ăn Uống</div>
-            </div>
-            <div class="topbar-actions">
-                <button class="notification-btn">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge">5</span>
-                </button>
-                <a href="./" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                </a>
-            </div>
-        </div>
+        <?php require_once __DIR__ . '/../component/topbar.php'; ?>
 
         <!-- Content Area -->
         <div class="content-area">
@@ -676,63 +602,72 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script>
-    // Navigation active state
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', function(e) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
+        // Navigation active state
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
         });
-    });
 
-    // View toggle
-    document.querySelectorAll('.view-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
+        // View toggle
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
         });
-    });
 
-    // Leave approval functions
-    function viewLeaveDetails(id) {
-        console.log('Viewing leave request:', id);
-        // AJAX call to load detailed leave information
-        alert('Opening detailed leave request view...');
-    }
-
-    function approveLeave(id) {
-        if (confirm('Approve this leave request?')) {
-            console.log('Approving leave request:', id);
-            // AJAX call to approve
-            alert('Leave request approved successfully!');
-            // Refresh data
+        // Leave approval functions
+        function viewLeaveDetails(id) {
+            console.log('Viewing leave request:', id);
+            // AJAX call to load detailed leave information
+            alert('Opening detailed leave request view...');
         }
-    }
 
-    function rejectLeave(id) {
-        const reason = prompt('Enter rejection reason:');
-        if (reason) {
-            console.log('Rejecting leave request:', id, 'Reason:', reason);
-            // AJAX call to reject with comment
-            alert('Leave request rejected with comments.');
-            // Refresh data
+        function approveLeave(id) {
+            if (confirm('Approve this leave request?')) {
+                console.log('Approving leave request:', id);
+                // AJAX call to approve
+                alert('Leave request approved successfully!');
+                // Refresh data
+            }
         }
-    }
 
-    // Calendar day click
-    document.querySelectorAll('.calendar-day').forEach(day => {
-        day.addEventListener('click', function() {
-            console.log('Opening shift details for:', this.querySelector('.day-number').textContent);
-            // Open modal to view/edit shifts for this day
+        function rejectLeave(id) {
+            const reason = prompt('Enter rejection reason:');
+            if (reason) {
+                console.log('Rejecting leave request:', id, 'Reason:', reason);
+                // AJAX call to reject with comment
+                alert('Leave request rejected with comments.');
+                // Refresh data
+            }
+        }
+
+        // Calendar day click
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.addEventListener('click', function() {
+                console.log('Opening shift details for:', this.querySelector('.day-number').textContent);
+                // Open modal to view/edit shifts for this day
+            });
         });
-    });
 
-    // Auto-refresh dashboard data
-    function refreshDashboard() {
-        console.log('Refreshing dashboard data...');
-        // AJAX calls to update stats, schedule, and team status
-    }
+        // Auto-refresh dashboard data
+        function refreshDashboard() {
+            console.log('Refreshing dashboard data...');
+            // AJAX calls to update stats, schedule, and team status
+        }
 
-    setInterval(refreshDashboard, 60000); // Refresh every 60 seconds
+        setInterval(refreshDashboard, 60000); // Refresh every 60 seconds
+
+        // Trong button đăng xuất
+        document.getElementById('logoutBtn').addEventListener('click', function(e) {
+            // ✅ Xóa cookie phía client
+            document.cookie = 'remember_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+
+            // Sau đó mới redirect
+            window.location.href = '?controller=login&action=sign_out';
+        });
     </script>
 </body>
 

@@ -11,6 +11,7 @@ class ModelDepartment extends Connect{
         $result=$this->select($sql);
         if($result->num_rows>0){
             $row=mysqli_fetch_assoc($result);
+            $_SESSION["ten_phong_ban"]=$row["ten_phong_ban"];
             return new Department($row);
         }
 
