@@ -375,9 +375,7 @@
     <div class="main-content">
         <!-- Topbar -->
         <?php require_once __DIR__ . '/../component/topbar.php'; ?>
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="spinner-border text-light" style="width: 3rem; height: 3rem;"></div>
-        </div>
+       
 
         <div class="container-fluid py-4">
             <div class="row mb-4">
@@ -423,6 +421,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Tạo loading overlay nếu chưa có
+
+});
         // Biến toàn cục
         let danhSachNhanVien = [];
         let danhSachCa = [];
@@ -600,13 +602,13 @@
         const ca = danhSachCa.find(c => parseInt(c.ma_ca) === maCa);
         if (!ca) return;
 
-        const isDeletable = !CA_MAC_DINH.includes(maCa);
+    
 
         html += `
             <div class="shift-section">
-                ${isDeletable ? `<button class="btn-remove-shift" onclick="xoaCa(${thu}, ${maCa})">
+                ${ `<button class="btn-remove-shift" onclick="xoaCa(${thu}, ${maCa})">
                     <i class="fas fa-times"></i> Xóa ca
-                </button>` : ''}
+                </button>` }
                 <div class="shift-title">
                     <span>
                         <i class="fas fa-clock me-2" style="color: #0d6efd;"></i>
@@ -758,10 +760,7 @@
         }
 
         function xoaCa(thu, maCa) {
-            if (CA_MAC_DINH.includes(maCa)) {
-                showAlert('warning', 'Không thể xóa ca mặc định');
-                return;
-            }
+           
 
             if (confirm('Xóa ca này? Nhân viên trong ca sẽ bị xóa khỏi lịch.')) {
                 if (lichCoDinh[thu] && lichCoDinh[thu][maCa]) {
@@ -1098,14 +1097,20 @@ function xepCaHangLoat(thu, caCu, caMoi) {
             }, 3000);
         }
 
-        function showLoading(show) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (show) {
-                overlay.classList.add('show');
-            } else {
-                overlay.classList.remove('show');
-            }
-        }
+      
+        function showLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('d-none');
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.add('d-none');
+    }
+}
 
         // Khởi động
         loadData();

@@ -142,6 +142,7 @@
             border-collapse: collapse;
             color: white;
             border: 1px solid #dee2e6;
+            background: #2c3e50fc;
             
         }
 
@@ -189,12 +190,11 @@
 
         .badge-warning {
             
-            color: #856404;
+            color:#efff00;
         }
 
         .badge-danger {
-            
-            color: #721c24;
+    color: #eb0000;
         }
 
         .badge-info {
@@ -204,12 +204,12 @@
 
         .badge-secondary {
             
-            color:rgb(207, 211, 214);
+            color:rgb(197 255 58);
         }
 
         .badge-purple {
             
-            color: #6f42c1;
+            color: #e99f30;
         }
 
         .time-display {
@@ -379,15 +379,15 @@
     }
 
     .page-btn:hover:not(:disabled) {
-        background: #667eea;
-        border-color: #667eea;
+        background: rgba(128, 234, 102, 0.34);
+        border-color:rgba(128, 234, 102, 0.34);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
 
     .page-btn.active {
-        background: #667eea;
-        border-color: #667eea;
+        background:rgba(128, 234, 102, 0.34);
+        border-color: rgba(128, 234, 102, 0.34);
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
 
@@ -508,6 +508,7 @@
                         <option value="VANG_MAT">Vắng mặt</option>
                         <option value="NGHI_PHEP">Nghỉ phép</option>
                         <option value="QUEN_CHAM_CONG">Quên chấm công</option>
+                        <option value="NGHI_PHEP_DON">nghỉ phép theo đơn</option>
                     </select>
                 </div>
               
@@ -540,6 +541,10 @@
             <div class="stat-card">
                 <div class="label">Nghỉ Phép</div>
                 <div class="number" style="color: #17a2b8;" id="leaveCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">Nghỉ Phép theo đơn</div>
+                <div class="number" style="color: #17a2b8;" id="leaveCount1">0</div>
             </div>
             <div class="stat-card">
                 <div class="label">Quên Chấm Công</div>
@@ -676,7 +681,7 @@
     // Handle search
     function handleSearch() {
         const searchInput = document.getElementById('searchInput');
-        if (!searchInput) return;
+        
         
         searchTerm = searchInput.value;
         const statusFilter = document.getElementById('statusFilter').value;
@@ -710,27 +715,46 @@
         document.getElementById('lateCount').textContent = stats.di_tre || 0;
         document.getElementById('absentCount').textContent = stats.vang_mat || 0;
         document.getElementById('leaveCount').textContent = stats.nghi_phep || 0;
+        document.getElementById('leaveCount1').textContent = stats.nghi_phep_don || 0;
         document.getElementById('forgotCount').textContent = stats.quen_cham_cong || 0;
     }
 
     // Get status badge
     function getStatusBadge(status, lateMinutes, checkInTime, checkOutTime) {
-        if (status === 'QUEN_CHAM_CONG') {
-            if (checkInTime && !checkOutTime) {
-                return '<span class="badge badge-purple"> Quên chấm công RA</span>';
-            } else if (!checkInTime && checkOutTime) {
-                return '<span class="badge badge-purple"> Quên chấm công VÀO</span>';
-            } else {
-                return '<span class="badge badge-purple"> Quên chấm công</span>';
-            }
+        // if (status === 'QUEN_CHAM_CONG') {
+        //     if (checkInTime && !checkOutTime) {
+        //         return '<span class="badge badge-purple"> Quên chấm công </span>';
+        //     } else if (!checkInTime && checkOutTime) {
+        //         return '<span class="badge badge-purple"> Quên chấm công </span>';
+        //     } else {
+        //         return '<span class="badge badge-purple"> Quên chấm công</span>';
+        //     }
+        // }
+        if (status === 'DI_LAM_NGAY_LE') {
+        return '<span class="badge badge-success" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">🎉 Đi làm ngày lễ</span>';
+    }
+    
+    if (status === 'QUEN_CHAM_CONG') {
+        if (checkInTime && !checkOutTime) {
+            return '<span class="badge badge-purple"> Quên chấm RA</span>';
+        } else if (!checkInTime && checkOutTime) {
+            return '<span class="badge badge-purple"> Quên chấm VÀO</span>';
+        } else {
+            return '<span class="badge badge-purple"> Quên chấm công</span>';
         }
+    }
+    
+ 
+    
         
         const badges = {
-            'DI_LAM': '<span class="badge badge-success"> Đi làm đúng giờ</span>',
+            'DI_LAM': '<span class="badge badge-success"> Đi làm </span>',
             'DI_TRE': '<span class="badge badge-warning"> Đi trễ ' + lateMinutes + ' phút</span>',
             'VE_SOM': '<span class="badge badge-warning"> Về sớm</span>',
             'VANG_MAT': '<span class="badge badge-danger"> Vắng mặt</span>',
-            'NGHI_PHEP': '<span class="badge badge-info"> Nghỉ phép</span>'
+            'NGHI_PHEP': '<span class="badge badge-info"> Nghỉ phép</span>',
+            'NGHI_PHEP_DON': '<span class="badge badge-info"> Nghỉ phép đơn</span>'
+         
         };
         
         return badges[status] || '<span class="badge badge-secondary">' + status + '</span>';
@@ -766,159 +790,180 @@
 
     // Render table with pagination
     function renderTable(date) {
-        const container = document.getElementById('tableContent');
+    const container = document.getElementById('tableContent');
 
-        if (filteredData.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div style="font-size: 4em; margin-bottom: 20px;"></div>
-                    <h3>Không có dữ liệu</h3>
-                    <p>Không tìm thấy nhân viên nào theo bộ lọc đã chọn</p>
+    if (filteredData.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div style="font-size: 4em; margin-bottom: 20px;">📭</div>
+                <h3>Không có dữ liệu</h3>
+                <p>Không tìm thấy nhân viên nào theo bộ lọc đã chọn</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredData.length / pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, filteredData.length);
+    const paginatedData = filteredData.slice(startIndex, endIndex);
+
+    const dayOfWeek = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][new Date(date).getDay()];
+
+    let html = `
+        <div class="table-header">
+            <div>
+                <h3 style="color:rgb(255, 255, 255); margin-bottom: 5px;">📊 Bảng Chấm Công - ${dayOfWeek}, ${new Date(date).toLocaleDateString('vi-VN')}</h3>
+                <p class="note">⏰ Thời gian được phép trễ: ${configData.SO_PHUT_DUOC_PHEP_TRE} phút | Được phép về sớm: ${configData.SO_PHUT_DUOC_PHEP_VE_SOM} phút</p>
+            </div>
+            <div class="pagination-controls">
+                <div class="page-size-selector">
+                    <label>Hiển thị:</label>
+                    <select id="pageSizeSelect" onchange="changePageSize()">
+                        <option value="10" ${pageSize === 10 ? 'selected' : ''}>10</option>
+                        <option value="25" ${pageSize === 25 ? 'selected' : ''}>25</option>
+                        <option value="50" ${pageSize === 50 ? 'selected' : ''}>50</option>
+                        <option value="100" ${pageSize === 100 ? 'selected' : ''}>100</option>
+                    </select>
                 </div>
-            `;
-            return;
-        }
-
-        // Calculate pagination
-        const totalPages = Math.ceil(filteredData.length / pageSize);
-        const startIndex = (currentPage - 1) * pageSize;
-        const endIndex = Math.min(startIndex + pageSize, filteredData.length);
-        const paginatedData = filteredData.slice(startIndex, endIndex);
-
-        const dayOfWeek = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][new Date(date).getDay()];
-
-        let html = `
-            <div class="table-header">
-                <div>
-                    <h3 style="color:rgb(255, 255, 255); margin-bottom: 5px;"> Bảng Chấm Công - ${dayOfWeek}, ${new Date(date).toLocaleDateString('vi-VN')}</h3>
-                    <p class="note">Thời gian được phép trễ: ${configData.SO_PHUT_DUOC_PHEP_TRE} phút | Được phép về sớm: ${configData.SO_PHUT_DUOC_PHEP_VE_SOM} phút</p>
-                </div>
-                <div class="pagination-controls">
-                   
-                    <div class="page-size-selector">
-                        <label>Hiển thị:</label>
-                        <select id="pageSizeSelect" onchange="changePageSize()">
-                            <option value="10" ${pageSize === 10 ? 'selected' : ''}>10</option>
-                            <option value="25" ${pageSize === 25 ? 'selected' : ''}>25</option>
-                            <option value="50" ${pageSize === 50 ? 'selected' : ''}>50</option>
-                            <option value="100" ${pageSize === 100 ? 'selected' : ''}>100</option>
-                        </select>
-                    </div>
-                    <div class="search-box">
-                        <input 
-                            type="text" 
-                            id="searchInput" 
-                            placeholder="Tìm theo tên, mã NV, email..."
-                            value="${searchTerm}"
-                            onkeyup="handleSearch()"
-                        />
-                    </div>
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="🔍 Tìm theo tên, mã NV, email..."
+                        value="${searchTerm}"
+                        onkeyup="handleSearch()"
+                    />
                 </div>
             </div>
-            
-            <table>
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Mã NV</th>
-                        <th>Họ Tên</th>
-                        <th>Phòng Ban</th>
-                        <th>Ca Làm</th>
-                        <th>Giờ Vào Ca</th>
-                        <th>Giờ Ra Ca</th>
-                        <th>Giờ Chấm Vào</th>
-                        <th>Giờ Chấm Ra</th>
-                        <th>Tổng Giờ</th>
-                        <th>Trạng Thái</th>
-                        <th>Ghi Chú</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        paginatedData.forEach((item, index) => {
-            const globalIndex = startIndex + index + 1;
-            html += `
+        </div>
+        
+        <table>
+            <thead>
                 <tr>
-                    <td>${globalIndex}</td>
-                    <td><strong>#${highlightText(item.ma_nhan_vien.toString(), searchTerm)}</strong></td>
-                    <td>${highlightText(item.ho_ten, searchTerm)}</td>
-                    <td>${highlightText(item.ten_phong_ban, searchTerm)}</td>
-                    <td><span class="badge badge-secondary">${item.ten_ca}</span></td>
-                    <td class="time-display">${item.gio_bat_dau}</td>
-                    <td class="time-display">${item.gio_ket_thuc}</td>
-                    <td class="time-display" style="${!item.gio_vao ? 'color: #dc3545;' : ''}">${item.gio_vao || ' Chưa chấm'}</td>
-                    <td class="time-display" style="${!item.gio_ra ? 'color: #dc3545;' : ''}">${item.gio_ra || ' Chưa chấm'}</td>
-                    <td class="time-display">${item.tong_gio_lam ? item.tong_gio_lam + 'h' : '---'}</td>
-                    <td>${getStatusBadge(item.trang_thai, item.so_phut_tre, item.gio_vao, item.gio_ra)}</td>
-                    <td class="note">${item.ghi_chu || ''}</td>
+                    <th>STT</th>
+                    <th>Mã NV</th>
+                    <th>Họ Tên</th>
+                    <th>Phòng Ban</th>
+                    <th>Ca Làm</th>
+                    <th>Giờ Vào Ca</th>
+                    <th>Giờ Ra Ca</th>
+                    <th>Giờ Chấm Vào</th>
+                    <th>Giờ Chấm Ra</th>
+                    <th>Tổng Giờ</th>
+             
+                    <th>Trạng Thái</th>
                 </tr>
-            `;
-        });
+            </thead>
+            <tbody>
+    `;
 
+    paginatedData.forEach((item, index) => {
+        const globalIndex = startIndex + index + 1;
+        
+     
+        let phepStyle = 'color: #28a745; font-weight: bold;';
+        if (item.so_ngay_phep_con_lai <= 0) {
+            phepStyle = 'color: #dc3545; font-weight: bold;';
+        } else if (item.so_ngay_phep_con_lai <= 3) {
+            phepStyle = 'color: #ffc107; font-weight: bold;';
+        }
+        
+    
+        const tangCaStyle = item.so_gio_tang_ca_con_lai > 0 ? 
+            'color: #ffc107; font-weight: bold;' : 
+            'color: rgb(180, 180, 180);';
+        
         html += `
-                </tbody>
-            </table>
+            <tr>
+                <td>${globalIndex}</td>
+                <td><strong>#${highlightText(item.ma_nhan_vien.toString(), searchTerm)}</strong></td>
+                <td>${highlightText(item.ho_ten, searchTerm)}</td>
+                <td>${highlightText(item.ten_phong_ban, searchTerm)}</td>
+                <td><span class="badge badge-secondary">${item.ten_ca}</span></td>
+                <td class="time-display">${item.gio_bat_dau}</td>
+                <td class="time-display">${item.gio_ket_thuc}</td>
+                <td class="time-display" style="${!item.gio_vao ? 'color:rgb(247, 247, 247);' : ''}">${item.gio_vao || '---'}</td>
+                <td class="time-display" style="${!item.gio_ra ? 'color: rgb(247, 247, 247);' : ''}">${item.gio_ra || '---'}</td>
+                <td class="time-display">${item.tong_gio_lam ? item.tong_gio_lam + 'h' : '---'}</td>
+               
+                <td>${getStatusBadge(item.trang_thai, item.so_phut_tre, item.gio_vao, item.gio_ra)}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+        </table>
+    `;
+
+   
+    if (totalPages > 1) {
+        html += `
+            <div style="margin-top: 20px; display: flex; justify-content: center; align-items: center; padding: 20px;">
+                <div class="pagination">
+                    <button class="page-btn" onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''}>⏮</button>
+                    <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>◀</button>
         `;
 
-        // Add pagination controls
-        if (totalPages > 1) {
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage < maxVisiblePages - 1) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        if (startPage > 1) {
+            html += `<button class="page-btn" onclick="changePage(1)">1</button>`;
+            if (startPage > 2) {
+                html += `<span>...</span>`;
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
             html += `
-                <div style="margin-top: 20px; display: flex; justify-content: center; align-items: center; padding: 20px;">
-                    <div class="pagination">
-                        <button class="page-btn" onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''}>
-                            ⏮️ Đầu
-                        </button>
-                        <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
-                            ◀️ Trước
-                        </button>
-            `;
-
-            // Page numbers
-            const maxVisiblePages = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-            
-            if (endPage - startPage < maxVisiblePages - 1) {
-                startPage = Math.max(1, endPage - maxVisiblePages + 1);
-            }
-
-            if (startPage > 1) {
-                html += `<button class="page-btn" onclick="changePage(1)">1</button>`;
-                if (startPage > 2) {
-                    html += `<span>...</span>`;
-                }
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                html += `
-                    <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
-                        ${i}
-                    </button>
-                `;
-            }
-
-            if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    html += `<span>...</span>`;
-                }
-                html += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
-            }
-
-            html += `
-                        <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
-                            Sau ▶️
-                        </button>
-                        <button class="page-btn" onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>
-                            Cuối ⏭️
-                        </button>
-                    </div>
-                </div>
+                <button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                    ${i}
+                </button>
             `;
         }
 
-        container.innerHTML = html;
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += `<span>...</span>`;
+            }
+            html += `<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+        }
+
+        html += `
+                    <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>▶</button>
+                    <button class="page-btn" onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>⏭</button>
+                </div>
+            </div>
+        `;
     }
+
+    container.innerHTML = html;
+}
+
+    function updateStatistics(stats) {
+    document.getElementById('totalEmployees').textContent = stats.tong_nhan_vien || 0;
+    document.getElementById('presentCount').textContent = stats.di_lam || 0;
+    document.getElementById('lateCount').textContent = stats.di_tre || 0;
+    document.getElementById('absentCount').textContent = stats.vang_mat || 0;
+    document.getElementById('leaveCount').textContent = stats.nghi_phep || 0;
+    document.getElementById('leaveCount1').textContent = stats.nghi_phep_don || 0;
+    document.getElementById('forgotCount').textContent = stats.quen_cham_cong || 0;
+    
+   
+    const holidayCount = stats.di_lam_ngay_le || 0;
+    const holidayStatElement = document.getElementById('holidayCount');
+    if (holidayStatElement) {
+        holidayStatElement.textContent = holidayCount;
+    }
+}
 </script>
 </body>
 </html>

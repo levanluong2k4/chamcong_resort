@@ -26,6 +26,9 @@ class ChamCongController {
             $leaves = $this->model->getDonNghiPhep($ngay);
             $holiday = $this->model->getNgayNghi($ngay);
             
+            // ✅ Lấy thông tin số dư phép của tất cả nhân viên
+            $soduphep = $this->model->getSoDuPhep($ngay, $ma_phong_ban);
+            
             $result = [];
             foreach ($schedules as $schedule) {
                 $ma_nv = $schedule['ma_nhan_vien'];
@@ -33,19 +36,28 @@ class ChamCongController {
                 $cc = $attendance[$ma_nv] ?? null;
                 $gio_vao = $cc ? $cc['gio_vao'] : null;
                 $gio_ra = $cc ? $cc['gio_ra'] : null;
+                $trang_thai_db = $cc ? $cc['trang_thai'] : null;
                 
                 $isOnLeave = isset($leaves[$ma_nv]);
                 $leaveInfo = $leaves[$ma_nv] ?? null;
                 $isHoliday = $holiday !== null;
                 
-                $status = $this->tinhTrangThai(
-                    $schedule['gio_bat_dau'],
-                    $gio_vao,
-                    $gio_ra,
-                    $isOnLeave,
-                    $isHoliday,
-                    $config
-                );
+                // ✅ Ưu tiên lấy trạng thái từ database (đã có trigger xử lý)
+                if ($trang_thai_db === 'DI_LAM_NGAY_LE') {
+                    $status = [
+                        'trang_thai' => 'DI_LAM_NGAY_LE',
+                        'ghi_chu' => '🎉 Đi làm ngày lễ: ' . ($holiday['ly_do'] ?? 'Ngày lễ')
+                    ];
+                } else {
+                    $status = $this->tinhTrangThai(
+                        $schedule['gio_bat_dau'],
+                        $gio_vao,
+                        $gio_ra,
+                        $isOnLeave,
+                        $isHoliday,
+                        $config
+                    );
+                }
                 
                 $so_phut_tre = 0;
                 if ($status['trang_thai'] === 'DI_TRE' && $gio_vao) {
@@ -56,6 +68,7 @@ class ChamCongController {
                 }
                 
                 $tong_gio_lam = 0;
+                
                 if ($gio_vao && $gio_ra) {
                     $tong_gio_lam = $this->tinhTongGioLam(
                         $gio_vao,
@@ -65,6 +78,9 @@ class ChamCongController {
                         $config
                     );
                 }
+                
+                // ✅ Lấy số ngày phép còn lại từ bảng soduphep
+                $phep_info = $soduphep[$ma_nv] ?? null;
                 
                 $result[] = [
                     'ma_lich' => $schedule['ma_lich'],
@@ -81,6 +97,12 @@ class ChamCongController {
                     'trang_thai' => $status['trang_thai'],
                     'so_phut_tre' => $so_phut_tre,
                     'tong_gio_lam' => $tong_gio_lam,
+                    // ✅ THÔNG TIN PHÉP
+                    'so_ngay_phep_duoc_huong' => $phep_info['so_ngay_phep_duoc_huong'] ?? 0,
+                    'so_ngay_phep_da_dung' => $phep_info['so_ngay_phep_da_dung'] ?? 0,
+                    'so_ngay_phep_con_lai' => $phep_info['so_ngay_phep_con_lai'] ?? 0,
+                    'so_gio_tang_ca_tich_luy' => $phep_info['so_gio_tang_ca_tich_luy'] ?? 0,
+                    'so_gio_tang_ca_con_lai' => $phep_info['so_gio_tang_ca_con_lai'] ?? 0,
                     'is_on_leave' => $isOnLeave,
                     'is_holiday' => $isHoliday,
                     'leave_info' => $leaveInfo,
@@ -89,6 +111,13 @@ class ChamCongController {
             }
             
             $stats = $this->model->getThongKe($ngay, $ma_phong_ban);
+            
+            $stats['di_lam_ngay_le'] = 0;
+            foreach ($result as $item) {
+                if ($item['trang_thai'] === 'DI_LAM_NGAY_LE') {
+                    $stats['di_lam_ngay_le']++;
+                }
+            }
             
             echo json_encode([
                 'success' => true,
@@ -192,62 +221,64 @@ class ChamCongController {
         }
     }
     
+    // =====================================================
+    // PRIVATE METHODS - Các hàm tính toán
+    // =====================================================
+    
     private function tinhTrangThai($gio_ca, $gio_vao, $gio_ra, $isOnLeave, $isHoliday, $config) {
-        // 1. Kiểm tra ngày nghỉ lễ
-        if ($isHoliday) {
-            return ['trang_thai' => 'NGHI_PHEP', 'ghi_chu' => 'Ngày nghỉ lễ'];
+        // 1. Kiểm tra ngày nghỉ lễ (nếu KHÔNG có chấm công)
+        if ($isHoliday && !$gio_vao && !$gio_ra) {
+            return ['trang_thai' => 'NGHI_PHEP', 'ghi_chu' => ' Ngày nghỉ lễ'];
         }
         
         // 2. Kiểm tra có đơn nghỉ phép
         if ($isOnLeave) {
-            return ['trang_thai' => 'NGHI_PHEP', 'ghi_chu' => 'Có đơn nghỉ phép đã duyệt'];
+            return ['trang_thai' => 'NGHI_PHEP_DON', 'ghi_chu' => ' Có đơn nghỉ phép đã duyệt'];
         }
         
-        // 3. Kiểm tra quên chấm công (chỉ có 1 trong 2)
+        // 3. Kiểm tra quên chấm công
         if (($gio_vao && !$gio_ra) || (!$gio_vao && $gio_ra)) {
             $ghi_chu = '';
             if ($gio_vao && !$gio_ra) {
-                $ghi_chu = '⚠️ Quên chấm công RA';
+                $ghi_chu = ' Quên chấm công RA';
             } else {
-                $ghi_chu = '⚠️ Quên chấm công VÀO';
+                $ghi_chu = ' Quên chấm công VÀO';
             }
             
             return ['trang_thai' => 'QUEN_CHAM_CONG', 'ghi_chu' => $ghi_chu];
         }
         
-        // 4. Vắng mặt (không chấm gì cả)
+        // 4. Vắng mặt
         if (!$gio_vao && !$gio_ra) {
             return ['trang_thai' => 'VANG_MAT', 'ghi_chu' => '❌ Không có chấm công'];
         }
         
-        // 5. Có chấm đủ cả vào và ra - Tính trạng thái
+        // 5. Có chấm đủ - Tính trạng thái
         $phut_ca = $this->timeToMinutes($gio_ca);
         $phut_vao = $this->timeToMinutes($gio_vao);
         $phut_tre = $phut_vao - $phut_ca;
         
-        // Đi đúng giờ hoặc trong khoảng cho phép
         if ($phut_tre <= $config['SO_PHUT_DUOC_PHEP_TRE']) {
             $ghi_chu = '';
             if ($phut_tre < 0) {
-                $ghi_chu = '✅ Đến sớm ' . abs($phut_tre) . ' phút';
+                $ghi_chu = ' Đến sớm ' . abs($phut_tre) . ' phút';
             } else if ($phut_tre > 0) {
-                $ghi_chu = '✅ Đến đúng giờ (trễ ' . $phut_tre . ' phút - trong khoảng cho phép)';
+                $ghi_chu = ' Đến đúng giờ (trễ ' . $phut_tre . ' phút - trong khoảng cho phép)';
             } else {
-                $ghi_chu = '✅ Đến đúng giờ';
+                $ghi_chu = ' Đến đúng giờ';
             }
             
             return ['trang_thai' => 'DI_LAM', 'ghi_chu' => $ghi_chu];
         }
         
-        // Đi trễ
         return ['trang_thai' => 'DI_TRE', 'ghi_chu' => '⏰ Trễ ' . $phut_tre . ' phút'];
     }
+    
     private function timeToMinutes($time) {
         if (!$time) return 0;
         
-        // Xử lý datetime format: 2025-12-24 13:51:49
         if (strpos($time, ' ') !== false) {
-            $time = explode(' ', $time)[1]; // Lấy phần giờ
+            $time = explode(' ', $time)[1];
         }
         
         $parts = explode(':', $time);
@@ -282,23 +313,11 @@ class ChamCongController {
             $phut_ra += 24 * 60;
         }
         
-        // Tính giờ vào thực tế
-        if ($phut_vao < $phut_ca_bat_dau) {
-            $phut_vao_thuc_te = $phut_ca_bat_dau;
-        } else if ($phut_vao > $phut_ca_bat_dau + $config['SO_PHUT_DUOC_PHEP_TRE']) {
-            $phut_vao_thuc_te = $phut_vao;
-        } else {
-            $phut_vao_thuc_te = $phut_ca_bat_dau;
-        }
+        $phut_vao_thuc_te = ($phut_vao < $phut_ca_bat_dau) ? $phut_ca_bat_dau : 
+                           (($phut_vao > $phut_ca_bat_dau + $config['SO_PHUT_DUOC_PHEP_TRE']) ? $phut_vao : $phut_ca_bat_dau);
         
-        // Tính giờ ra thực tế
-        if ($phut_ra > $phut_ca_ket_thuc) {
-            $phut_ra_thuc_te = $phut_ca_ket_thuc;
-        } else if ($phut_ra < $phut_ca_ket_thuc - $config['SO_PHUT_DUOC_PHEP_VE_SOM']) {
-            $phut_ra_thuc_te = $phut_ra;
-        } else {
-            $phut_ra_thuc_te = $phut_ca_ket_thuc;
-        }
+        $phut_ra_thuc_te = ($phut_ra > $phut_ca_ket_thuc) ? $phut_ca_ket_thuc : 
+                          (($phut_ra < $phut_ca_ket_thuc - $config['SO_PHUT_DUOC_PHEP_VE_SOM']) ? $phut_ra : $phut_ca_ket_thuc);
         
         $tong_phut = $phut_ra_thuc_te - $phut_vao_thuc_te;
         

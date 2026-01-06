@@ -251,7 +251,7 @@
                 
                 // Chuyển hướng sau 500ms
                 setTimeout(() => {
-                    window.location.href = '/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=home&action=index';
+                    window.location.href = '/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=profile&action=index';
                 }, 500);
                 
             } else {

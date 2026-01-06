@@ -29,9 +29,7 @@
     <div class="main-content">
         <!-- Topbar -->
         <?php require_once __DIR__ . '/../component/topbar.php'; ?>
-        <div class="loading-overlay" id="loadingOverlay">
-            <div class="spinner-border text-light" style="width: 3rem; height: 3rem;"></div>
-        </div>
+     
 
         <div class="container-fluid py-4">
             <div class="row mb-4">
@@ -142,9 +140,9 @@
 
                 // Hiển thị thông tin tuần
                 document.getElementById('weekRange').innerHTML = `
-                    <i class="fas fa-calendar-check me-2"></i>
-                    Từ ${formatDate(thongTinTuan.thu_2)} đến ${formatDate(thongTinTuan.thu_7)}
-                `;
+    <i class="fas fa-calendar-check me-2"></i>
+    Từ ${formatDate(thongTinTuan.thu_2)} đến ${formatDate(thongTinTuan.chu_nhat || thongTinTuan.thu_7)}
+`;
 
                 // Xử lý chế độ tạo mới hoặc chỉnh sửa
                 if (thongTinTuan.da_ton_tai) {
@@ -251,32 +249,43 @@
             });
         }
 
-        function renderSchedule() {
-            const container = document.getElementById('scheduleContainer');
-            container.innerHTML = '';
+       // ✅ ĐÚNG: Dùng object để map rõ ràng
+function renderSchedule() {
+    const container = document.getElementById('scheduleContainer');
+    container.innerHTML = '';
 
-            thongTinTuan.ngay_trong_tuan.forEach(item => {
-                const dayCard = document.createElement('div');
-                dayCard.className = 'day-card';
+    // ✅ Map chính xác thu -> tên
+    const tenThuMap = {
+        1: 'Chủ Nhật',
+        2: 'Thứ 2',
+        3: 'Thứ 3',
+        4: 'Thứ 4',
+        5: 'Thứ 5',
+        6: 'Thứ 6',
+        7: 'Thứ 7'
+    };
 
-                const tenThu = ['', '', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][item.thu];
+    thongTinTuan.ngay_trong_tuan.forEach(item => {
+        const dayCard = document.createElement('div');
+        dayCard.className = 'day-card';
 
-                dayCard.innerHTML = `
-                    <div class="day-header">
-                        <div>
-                            <i class="fas fa-calendar-day me-2"></i>${tenThu}
-                            <span class="day-date">(${item.ngay_hien_thi})</span>
-                        </div>
-                        <span class="badge-count">${getTongNhanVienTrongNgay(item.ngay)} nhân viên</span>
-                    </div>
-                    ${renderShifts(item.ngay)}
-                `;
-                container.appendChild(dayCard);
-            });
+        const tenThu = tenThuMap[item.thu] || 'Thứ ' + item.thu;
 
-            initDragAndDrop();
-        }
+        dayCard.innerHTML = `
+            <div class="day-header">
+                <div>
+                    <i class="fas fa-calendar-day me-2"></i>${tenThu}
+                    <span class="day-date">(${item.ngay_hien_thi})</span>
+                </div>
+                <span class="badge-count">${getTongNhanVienTrongNgay(item.ngay)} nhân viên</span>
+            </div>
+            ${renderShifts(item.ngay)}
+        `;
+        container.appendChild(dayCard);
+    });
 
+    initDragAndDrop();
+}
         function renderShifts(ngay) {
             const caList = caHienThi[ngay] || CA_MAC_DINH;
 
@@ -285,13 +294,13 @@
                 const ca = danhSachCa.find(c => parseInt(c.ma_ca) === maCa);
                 if (!ca) return;
 
-                const isDeletable = !CA_MAC_DINH.includes(maCa);
+               
 
                 html += `
                     <div class="shift-section">
-                        ${isDeletable ? `<button class="btn-remove-shift" onclick="xoaCa('${ngay}', ${maCa})">
+                        ${ `<button class="btn-remove-shift" onclick="xoaCa('${ngay}', ${maCa})">
                             <i class="fas fa-times"></i> Xóa ca
-                        </button>` : ''}
+                        </button>` }
                         <div class="shift-title">
                             <span>
                                 <i class="fas fa-clock me-2" style="color: #0d6efd;"></i>
@@ -415,30 +424,80 @@
         }
 
         function renderNhanVienList(danhSach, ngay, ca, targetCa) {
-            if (danhSach.length === 0) {
-                return '<div style="text-align: center; color: #999; padding: 20px;">Không có nhân viên</div>';
-            }
+    if (danhSach.length === 0) {
+        return '<div style="text-align: center; color: #999; padding: 20px;">Không có nhân viên</div>';
+    }
 
-            return danhSach.map(nv => {
-                const isOnLeave = nghiPhep[ngay] && nghiPhep[ngay].includes(parseInt(nv.ma_nhan_vien));
-                const itemClass = isOnLeave ? 'employee-item on-leave' : 'employee-item';
+    // ✅ DEBUG: Kiểm tra dữ liệu nghỉ phép
+    console.log('=== renderNhanVienList DEBUG ===');
+    console.log('Ngày:', ngay);
+    console.log('Danh sách nghỉ phép ngày này:', nghiPhep[ngay]);
+    console.log('Toàn bộ nghỉ phép:', nghiPhep);
 
-                return `
-                    <div class="${itemClass}" draggable="${!isOnLeave}" data-id="${nv.ma_nhan_vien}" data-ngay="${ngay}" data-ca="${ca}">
-                        <div style="display: flex; align-items: center;">
-                            <input type="checkbox" class="employee-checkbox" ${isOnLeave ? 'disabled' : ''} onclick="toggleCheckbox(event, ${nv.ma_nhan_vien}, '${ngay}', ${ca})">
-                            <span>
-                                <i class="fas fa-user me-2"></i>${nv.ho_ten}
-                                ${isOnLeave ? '<span class="badge-on-leave">Nghỉ phép</span>' : ''}
-                            </span>
-                        </div>
-                        ${ca > 0 && !isOnLeave ? `<button class="btn-remove" onclick="xoaNhanVien('${ngay}', ${ca}, ${nv.ma_nhan_vien})">
-                            <i class="fas fa-times"></i>
-                        </button>` : ''}
-                    </div>
-                `;
-            }).join('');
+    return danhSach.map(nv => {
+        const maNV = parseInt(nv.ma_nhan_vien);
+        
+        // ✅ Kiểm tra nhân viên có nghỉ không - THÊM LOG
+        const danhSachNghiNgayNay = nghiPhep[ngay] || [];
+        const isOnLeave = danhSachNghiNgayNay.includes(maNV);
+        
+        // Log từng nhân viên
+        if (isOnLeave) {
+            console.log(`🔴 ${nv.ho_ten} (ID: ${maNV}) - NGHỈ PHÉP ngày ${ngay}`);
         }
+        
+        // 🎨 Style cảnh báo
+        const warningStyle = isOnLeave ? 
+            'border: 2px solid #ffc107; background: #fff3cd;' : '';
+        
+        const tooltip = isOnLeave ? 
+            `title="⚠️ ${nv.ho_ten} đã đăng ký nghỉ phép ngày này"` : '';
+
+        return `
+            <div class="employee-item" 
+                 draggable="true" 
+                 data-id="${maNV}" 
+                 data-ngay="${ngay}" 
+                 data-ca="${ca}"
+                 style="${warningStyle}"
+                 ${tooltip}>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" 
+                           class="employee-checkbox" 
+                           onclick="toggleCheckbox(event, ${maNV}, '${ngay}', ${ca})">
+                    <span style="flex: 1;">
+                        <i class="fas fa-user me-2"></i>${nv.ho_ten}
+                    </span>
+                    ${isOnLeave ? 
+                        '<span class="badge bg-warning text-dark" style="font-size: 10px; margin-left: auto;">OFF</span>' 
+                        : ''}
+                </div>
+                ${ca > 0 ? `<button class="btn-remove" onclick="xoaNhanVien('${ngay}', ${ca}, ${maNV})">
+                    <i class="fas fa-times"></i>
+                </button>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+
+function kiemTraNhanVienNghiPhep(maNV, ngay, action = 'xếp ca') {
+    const isOnLeave = nghiPhep[ngay] && nghiPhep[ngay].includes(parseInt(maNV));
+    
+    if (isOnLeave) {
+        const nhanVien = danhSachNhanVien.find(nv => parseInt(nv.ma_nhan_vien) === parseInt(maNV));
+        const tenNV = nhanVien ? nhanVien.ho_ten : 'Nhân viên';
+        
+        return confirm(
+            `⚠️ CẢNH BÁO:\n\n` +
+            `${tenNV} đã đăng ký nghỉ phép vào ngày ${formatDate(ngay)}.\n\n` +
+            `Bạn có chắc muốn ${action} cho nhân viên này không?`
+        );
+    }
+    
+    return true; // Không nghỉ phép, cho phép thao tác
+}
+
 
         function toggleCheckbox(event, maNV, ngay, ca) {
             event.stopPropagation();
@@ -480,65 +539,67 @@
         }
 
         function xepCaHangLoatTheoListbox(ngay, caMoi) {
-            console.log('=== DEBUG xepCaHangLoatTheoListbox ===');
-            console.log('ngay:', ngay, 'caMoi:', caMoi);
+    let selector = `.listbox[data-ngay="${ngay}"][data-ca="0"][data-target-ca="${caMoi}"]`;
+    let listbox = document.querySelector(selector);
 
-            // Tìm listbox với selector đầy đủ
-            let selector = `.listbox[data-ngay="${ngay}"][data-ca="0"][data-target-ca="${caMoi}"]`;
-            console.log('Selector:', selector);
+    if (!listbox) {
+        showAlert('danger', 'Lỗi: Không tìm thấy danh sách nhân viên');
+        return;
+    }
 
-            let listbox = document.querySelector(selector);
-            console.log('Listbox found:', listbox);
+    const selectedCheckboxes = listbox.querySelectorAll('.employee-checkbox:checked');
 
-            if (!listbox) {
-                console.log('Không tìm thấy! Kiểm tra tất cả listbox:');
-                const allListboxes = document.querySelectorAll(`.listbox[data-ngay="${ngay}"]`);
-                allListboxes.forEach((box, index) => {
-                    console.log(`Listbox ${index}:`, {
-                        'data-ngay': box.getAttribute('data-ngay'),
-                        'data-ca': box.getAttribute('data-ca'),
-                        'data-target-ca': box.getAttribute('data-target-ca')
-                    });
-                });
+    if (selectedCheckboxes.length === 0) {
+        showAlert('warning', 'Vui lòng chọn ít nhất 1 nhân viên');
+        return;
+    }
 
-                showAlert('danger', 'Lỗi: Không tìm thấy danh sách nhân viên');
-                return;
-            }
+    const selectedIds = Array.from(selectedCheckboxes).map(cb => {
+        return parseInt(cb.closest('.employee-item').dataset.id);
+    });
 
-            const selectedCheckboxes = listbox.querySelectorAll('.employee-checkbox:checked:not([disabled])');
-            console.log('Found checkboxes:', selectedCheckboxes.length);
+    // Đếm số nhân viên đang nghỉ phép
+    const nhanVienNghiPhep = selectedIds.filter(id => {
+        return nghiPhep[ngay] && nghiPhep[ngay].includes(id);
+    });
 
-            if (selectedCheckboxes.length === 0) {
-                showAlert('warning', 'Vui lòng chọn ít nhất 1 nhân viên');
-                return;
-            }
+    // Hiển thị cảnh báo nếu có nhân viên nghỉ phép
+    let confirmMessage = `Xếp ${selectedIds.length} nhân viên vào ca?`;
+    if (nhanVienNghiPhep.length > 0) {
+        confirmMessage = 
+            `⚠️ CẢNH BÁO:\n\n` +
+            `Có ${nhanVienNghiPhep.length}/${selectedIds.length} nhân viên đã đăng ký nghỉ phép.\n\n` +
+            `Bạn có chắc muốn xếp họ vào ca không?`;
+    }
 
-            const selectedIds = Array.from(selectedCheckboxes).map(cb => {
-                return parseInt(cb.closest('.employee-item').dataset.id);
-            });
+    if (!confirm(confirmMessage)) {
+        return;
+    }
 
-            console.log('Selected IDs:', selectedIds);
+    // Thực hiện xếp ca
+    if (lichTuan[ngay]) {
+        Object.keys(lichTuan[ngay]).forEach(ca => {
+            lichTuan[ngay][ca] = lichTuan[ngay][ca].filter(id => !selectedIds.includes(id));
+        });
+    }
 
-            // Xóa khỏi tất cả các ca cũ
-            if (lichTuan[ngay]) {
-                Object.keys(lichTuan[ngay]).forEach(ca => {
-                    lichTuan[ngay][ca] = lichTuan[ngay][ca].filter(id => !selectedIds.includes(id));
-                });
-            }
+    if (!lichTuan[ngay]) lichTuan[ngay] = {};
+    if (!lichTuan[ngay][caMoi]) lichTuan[ngay][caMoi] = [];
 
-            // Thêm vào ca mới
-            if (!lichTuan[ngay]) lichTuan[ngay] = {};
-            if (!lichTuan[ngay][caMoi]) lichTuan[ngay][caMoi] = [];
-
-            selectedIds.forEach(id => {
-                if (!lichTuan[ngay][caMoi].includes(id)) {
-                    lichTuan[ngay][caMoi].push(id);
-                }
-            });
-
-            renderSchedule();
-            showAlert('success', `Đã xếp ${selectedIds.length} nhân viên vào ca`);
+    selectedIds.forEach(id => {
+        if (!lichTuan[ngay][caMoi].includes(id)) {
+            lichTuan[ngay][caMoi].push(id);
         }
+    });
+
+    renderSchedule();
+    
+    let successMsg = `Đã xếp ${selectedIds.length} nhân viên vào ca`;
+    if (nhanVienNghiPhep.length > 0) {
+        successMsg += ` (bao gồm ${nhanVienNghiPhep.length} người nghỉ phép)`;
+    }
+    showAlert('success', successMsg);
+}
 
         function xepCaHangLoat(ngay, caCu, caMoi) {
             // Tìm TẤT CẢ checkbox đã chọn từ MỌI listbox "chưa xếp ca" của ngày này
@@ -594,28 +655,50 @@
         }
 
         function xepCaTatCa(ngay, ca) {
-            const nhanVienChuaXep = getNhanVienChuaXep(ngay);
+    const nhanVienChuaXep = getNhanVienChuaXep(ngay);
 
-            if (nhanVienChuaXep.length === 0) {
-                showAlert('info', 'Không có nhân viên nào chưa xếp ca');
-                return;
-            }
+    if (nhanVienChuaXep.length === 0) {
+        showAlert('info', 'Không có nhân viên nào chưa xếp ca');
+        return;
+    }
 
-            if (confirm(`Xếp tất cả ${nhanVienChuaXep.length} nhân viên vào ca này?`)) {
-                if (!lichTuan[ngay]) lichTuan[ngay] = {};
-                if (!lichTuan[ngay][ca]) lichTuan[ngay][ca] = [];
+    // Đếm nhân viên nghỉ phép
+    const nhanVienNghiPhep = nhanVienChuaXep.filter(nv => {
+        return nghiPhep[ngay] && nghiPhep[ngay].includes(parseInt(nv.ma_nhan_vien));
+    });
 
-                nhanVienChuaXep.forEach(nv => {
-                    const id = parseInt(nv.ma_nhan_vien);
-                    if (!lichTuan[ngay][ca].includes(id)) {
-                        lichTuan[ngay][ca].push(id);
-                    }
-                });
+    // Hiển thị cảnh báo
+    let confirmMessage = `Xếp tất cả ${nhanVienChuaXep.length} nhân viên vào ca này?`;
+    if (nhanVienNghiPhep.length > 0) {
+        confirmMessage = 
+            `⚠️ CẢNH BÁO:\n\n` +
+            `Có ${nhanVienNghiPhep.length}/${nhanVienChuaXep.length} nhân viên đã đăng ký nghỉ phép.\n\n` +
+            `Bạn có chắc muốn xếp tất cả vào ca không?`;
+    }
 
-                renderSchedule();
-                showAlert('success', `Đã xếp ${nhanVienChuaXep.length} nhân viên vào ca`);
-            }
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+
+    // Thực hiện xếp ca
+    if (!lichTuan[ngay]) lichTuan[ngay] = {};
+    if (!lichTuan[ngay][ca]) lichTuan[ngay][ca] = [];
+
+    nhanVienChuaXep.forEach(nv => {
+        const id = parseInt(nv.ma_nhan_vien);
+        if (!lichTuan[ngay][ca].includes(id)) {
+            lichTuan[ngay][ca].push(id);
         }
+    });
+
+    renderSchedule();
+    
+    let successMsg = `Đã xếp ${nhanVienChuaXep.length} nhân viên vào ca`;
+    if (nhanVienNghiPhep.length > 0) {
+        successMsg += ` (bao gồm ${nhanVienNghiPhep.length} người nghỉ phép)`;
+    }
+    showAlert('success', successMsg);
+}
 
         function boXepCaTatCa(ngay, ca) {
             const nhanVienTrongCa = getNhanVienTrongCa(ngay, ca);
@@ -687,60 +770,80 @@
         let draggedElement = null;
 
         function initDragAndDrop() {
-            const items = document.querySelectorAll('.employee-item:not(.on-leave)');
-            const listboxes = document.querySelectorAll('.listbox');
+    const items = document.querySelectorAll('.employee-item'); // Bỏ :not(.on-leave)
+    const listboxes = document.querySelectorAll('.listbox');
 
-            items.forEach(item => {
-                item.addEventListener('dragstart', e => {
-                    draggedElement = e.target;
-                    e.target.classList.add('dragging');
-                });
+    items.forEach(item => {
+        item.addEventListener('dragstart', e => {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+        });
 
-                item.addEventListener('dragend', e => {
-                    e.target.classList.remove('dragging');
-                });
-            });
+        item.addEventListener('dragend', e => {
+            e.target.classList.remove('dragging');
+        });
+    });
 
-            listboxes.forEach(box => {
-                box.addEventListener('dragover', e => {
-                    e.preventDefault();
-                    box.classList.add('drag-over');
-                });
+    listboxes.forEach(box => {
+        box.addEventListener('dragover', e => {
+            e.preventDefault();
+            box.classList.add('drag-over');
+        });
 
-                box.addEventListener('dragleave', e => {
-                    box.classList.remove('drag-over');
-                });
+        box.addEventListener('dragleave', e => {
+            box.classList.remove('drag-over');
+        });
 
-                box.addEventListener('drop', e => {
-                    e.preventDefault();
-                    box.classList.remove('drag-over');
+        box.addEventListener('drop', e => {
+            e.preventDefault();
+            box.classList.remove('drag-over');
 
-                    if (!draggedElement) return;
+            if (!draggedElement) return;
 
-                    const maNV = parseInt(draggedElement.dataset.id);
-                    const ngay = box.dataset.ngay;
-                    const ca = parseInt(box.dataset.ca);
+            const maNV = parseInt(draggedElement.dataset.id);
+            const ngay = box.dataset.ngay;
+            const ca = parseInt(box.dataset.ca);
 
-                    if (lichTuan[ngay]) {
-                        Object.keys(lichTuan[ngay]).forEach(oldCa => {
-                            lichTuan[ngay][oldCa] = lichTuan[ngay][oldCa].filter(id => id !== maNV);
-                        });
+            // Kiểm tra nếu kéo vào ca (ca > 0) và nhân viên đang nghỉ phép
+            if (ca > 0) {
+                const isOnLeave = nghiPhep[ngay] && nghiPhep[ngay].includes(maNV);
+                
+                if (isOnLeave) {
+                    const nhanVien = danhSachNhanVien.find(nv => parseInt(nv.ma_nhan_vien) === maNV);
+                    const tenNV = nhanVien ? nhanVien.ho_ten : 'Nhân viên';
+                    
+                    const confirm = window.confirm(
+                        `⚠️ CẢNH BÁO:\n\n` +
+                        `${tenNV} đã đăng ký nghỉ phép vào ngày ${formatDate(ngay)}.\n\n` +
+                        `Bạn có chắc muốn xếp ca cho nhân viên này không?`
+                    );
+                    
+                    if (!confirm) {
+                        return; // Hủy thao tác
                     }
+                }
+            }
 
-                    if (ca > 0) {
-                        if (!lichTuan[ngay]) lichTuan[ngay] = {};
-                        if (!lichTuan[ngay][ca]) lichTuan[ngay][ca] = [];
-                        if (!lichTuan[ngay][ca].includes(maNV)) {
-                            lichTuan[ngay][ca].push(maNV);
-                        }
-                    }
-
-                    renderSchedule();
-                    showAlert('success', 'Đã di chuyển nhân viên');
+            // Thực hiện di chuyển
+            if (lichTuan[ngay]) {
+                Object.keys(lichTuan[ngay]).forEach(oldCa => {
+                    lichTuan[ngay][oldCa] = lichTuan[ngay][oldCa].filter(id => id !== maNV);
                 });
-            });
-        }
+            }
 
+            if (ca > 0) {
+                if (!lichTuan[ngay]) lichTuan[ngay] = {};
+                if (!lichTuan[ngay][ca]) lichTuan[ngay][ca] = [];
+                if (!lichTuan[ngay][ca].includes(maNV)) {
+                    lichTuan[ngay][ca].push(maNV);
+                }
+            }
+
+            renderSchedule();
+            showAlert('success', 'Đã di chuyển nhân viên');
+        });
+    });
+}
         async function luuLichTuan() {
             const isEdit = thongTinTuan.da_ton_tai;
             const confirmMessage = isEdit ?
@@ -801,14 +904,19 @@
             }, 3000);
         }
 
-        function showLoading(show) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (show) {
-                overlay.classList.add('show');
-            } else {
-                overlay.classList.remove('show');
-            }
-        }
+        function showLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('d-none');
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.add('d-none');
+    }
+}
 
         loadData();
 

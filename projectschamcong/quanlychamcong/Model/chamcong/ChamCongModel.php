@@ -272,6 +272,10 @@ class ChamCongModel extends Connect {
                         WHEN cc.trang_thai = 'NGHI_PHEP' 
                         THEN cc.ma_nhan_vien 
                     END) as nghi_phep,
+                     COUNT(DISTINCT CASE 
+                        WHEN cc.trang_thai = 'NGHI_PHEP_DON' 
+                        THEN cc.ma_nhan_vien 
+                    END) as nghi_phep_don,
                     
                     -- Quên chấm công: Chỉ có 1 trong 2 (vào hoặc ra)
                     COUNT(DISTINCT CASE 
@@ -306,6 +310,48 @@ class ChamCongModel extends Connect {
         $result = $stmt->get_result();
         
         return $result->fetch_assoc();
+    }
+    public function getSoDuPhep($ngay, $ma_phong_ban = null) {
+        $nam = date('Y', strtotime($ngay));
+        $thang = date('m', strtotime($ngay));
+        
+        $sql = "SELECT 
+                    sdp.ma_nhan_vien,
+                    sdp.nam,
+                    sdp.thang,
+                    sdp.so_ngay_phep_duoc_huong,
+                    sdp.so_ngay_phep_da_dung,
+                    sdp.so_ngay_phep_con_lai,
+                    sdp.so_gio_tang_ca_tich_luy,
+                    sdp.so_gio_tang_ca_con_lai,
+                    sdp.so_ngay_cong
+                FROM soduphep sdp
+                INNER JOIN nhanvien nv ON sdp.ma_nhan_vien = nv.ma_nhan_vien
+                WHERE sdp.nam = ?
+                AND sdp.thang = ?
+                AND nv.trang_thai != 'NGHI_VIEC'";
+        
+        if ($ma_phong_ban) {
+            $sql .= " AND nv.ma_phong_ban = ?";
+        }
+        
+        $stmt = $this->conn->prepare($sql);
+        
+        if ($ma_phong_ban) {
+            $stmt->bind_param("iii", $nam, $thang, $ma_phong_ban);
+        } else {
+            $stmt->bind_param("ii", $nam, $thang);
+        }
+        
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $soduphep = [];
+        while ($row = $result->fetch_assoc()) {
+            $soduphep[$row['ma_nhan_vien']] = $row;
+        }
+        
+        return $soduphep;
     }
 }
 ?>

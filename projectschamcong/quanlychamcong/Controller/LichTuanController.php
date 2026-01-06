@@ -41,11 +41,19 @@ class LichTuanController {
             $da_ton_tai = $this->model->kiemTraLichTuanDaTonTai($thu2, $ma_phong_ban);
             
             $ngay_trong_tuan = [];
-            for ($i = 0; $i < 6; $i++) {
+            for ($i = 0; $i < 7; $i++) { // ✅ 7 ngày thay vì 6
                 $ngay = date('Y-m-d', strtotime($thu2 . " +$i days"));
+                
+                // Map thứ: 0->Thứ 2, 1->Thứ 3, ..., 6->Chủ Nhật
+                if ($i == 6) {
+                    $thu = 1; // Chủ Nhật
+                } else {
+                    $thu = $i + 2; // Thứ 2-7
+                }
+                
                 $ngay_trong_tuan[] = [
                     'ngay' => $ngay,
-                    'thu' => $i + 2,
+                    'thu' => $thu,
                     'ngay_hien_thi' => date('d/m/Y', strtotime($ngay))
                 ];
             }
@@ -54,7 +62,7 @@ class LichTuanController {
                 'success' => true,
                 'data' => [
                     'thu_2' => $thu2,
-                    'thu_7' => date('Y-m-d', strtotime($thu2 . ' +5 days')),
+                    'chu_nhat' => date('Y-m-d', strtotime($thu2 . ' +6 days')), // ✅ Thêm Chủ Nhật
                     'ngay_trong_tuan' => $ngay_trong_tuan,
                     'da_ton_tai' => $da_ton_tai
                 ]
@@ -123,7 +131,7 @@ class LichTuanController {
     }
     
     /**
-     * API: Lấy lịch cố định và nghỉ phép
+     * ✅ API: Lấy lịch tuần - PHÂN BIỆT CHẾ ĐỘ
      */
     public function layLichTuan() {
         if (ob_get_length()) ob_clean();
@@ -141,34 +149,30 @@ class LichTuanController {
                 exit;
             }
             
-            $lich_co_dinh = $this->model->layLichCoDinh($ma_phong_ban);
-            $nghi_phep = $this->model->layDanhSachNghiPhepTrongTuan($thu2, $ma_phong_ban);
+            // ✅ KIỂM TRA: Lịch đã tồn tại chưa?
+            $da_ton_tai = $this->model->kiemTraLichTuanDaTonTai($thu2, $ma_phong_ban);
             
-            $lich_tuan = [];
-            for ($i = 0; $i < 6; $i++) {
-                $ngay = date('Y-m-d', strtotime($thu2 . " +$i days"));
-                $thu = $i + 2;
+            if ($da_ton_tai) {
+                // ✅ CHẾ ĐỘ SỬA: Load từ DB
+                $data = $this->model->layLichTuanDaTao($thu2, $ma_phong_ban);
+                error_log("📝 CHẾ ĐỘ SỬA - Load từ DB");
                 
-                if (isset($lich_co_dinh[$thu])) {
-                    $lich_tuan[$ngay] = [];
-                    
-                    foreach ($lich_co_dinh[$thu] as $ma_ca => $nhan_vien_list) {
-                        $nv_nghi = $nghi_phep[$ngay] ?? [];
-                        $nv_lam_viec = array_diff($nhan_vien_list, $nv_nghi);
-                        
-                        $lich_tuan[$ngay][$ma_ca] = array_values($nv_lam_viec);
-                    }
-                }
+            } else {
+                // ✅ CHẾ ĐỘ TẠO MỚI: Load từ lịch cố định
+                $data = $this->model->layLichTuanTuLichCoDinh($thu2, $ma_phong_ban);
+                error_log("🆕 CHẾ ĐỘ TẠO - Load từ lịch cố định");
             }
+            
+            error_log("✅ Số ngày nghỉ phép: " . count($data['nghi_phep']));
+            error_log("✅ Số ngày có lịch: " . count($data['lich_tuan']));
             
             echo json_encode([
                 'success' => true,
-                'data' => [
-                    'lich_tuan' => $lich_tuan,
-                    'nghi_phep' => $nghi_phep
-                ]
+                'data' => $data
             ], JSON_UNESCAPED_UNICODE);
+            
         } catch (Exception $e) {
+            error_log("❌ Lỗi layLichTuan: " . $e->getMessage());
             echo json_encode([
                 'success' => false,
                 'message' => 'Lỗi: ' . $e->getMessage()
@@ -178,7 +182,7 @@ class LichTuanController {
     }
     
     /**
-     * API: Lưu lịch tuần
+     * ✅ API: Lưu lịch tuần (TẠO hoặc CẬP NHẬT)
      */
     public function luuLichTuan() {
         if (ob_get_length()) ob_clean();
@@ -200,17 +204,25 @@ class LichTuanController {
             $thu2 = $data['thu2'];
             $lich = $data['lich'];
             
+            // ✅ Kiểm tra chế độ
+            $da_ton_tai = $this->model->kiemTraLichTuanDaTonTai($thu2, $ma_phong_ban);
+            
             $result = $this->model->luuLichTuan($ma_phong_ban, $thu2, $lich);
             
             if ($result) {
+                $message = $da_ton_tai ? 
+                    '✅ Cập nhật lịch tuần thành công!' : 
+                    '✅ Tạo lịch tuần thành công!';
+                
                 echo json_encode([
                     'success' => true,
-                    'message' => 'Tạo lịch tuần thành công!'
+                    'message' => $message,
+                    'is_update' => $da_ton_tai
                 ], JSON_UNESCAPED_UNICODE);
             } else {
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Lỗi khi tạo lịch tuần'
+                    'message' => '❌ Lỗi khi lưu lịch tuần'
                 ], JSON_UNESCAPED_UNICODE);
             }
         } catch (Exception $e) {
@@ -226,7 +238,6 @@ class LichTuanController {
      * XUẤT EXCEL - Xuất một thứ cụ thể
      */
     public function xuatExcelTheoThu() {
-        // THÊM DÒNG NÀY
         if (ob_get_length()) ob_clean();
         
         try {
@@ -235,15 +246,12 @@ class LichTuanController {
             $thu = $_GET['thu'] ?? 2;
             
             if (!$thu2 || !$ma_phong_ban) {
-                // XÓA json_encode, chỉ die với text
                 die('Thiếu thông tin thu2 hoặc ma_phong_ban');
             }
             
-            // Gọi model xuất Excel
             $this->excelModel->xuatExcelTheoThu($thu2, $ma_phong_ban, $thu);
             
         } catch (Exception $e) {
-            // Chỉ die với text, không json
             die('Lỗi: ' . $e->getMessage());
         }
     }
@@ -298,11 +306,14 @@ class LichTuanController {
             
             $available_days = [];
             
-            for ($thu = 2; $thu <= 7; $thu++) {
+            // ✅ Lặp qua 7 ngày: Thứ 2-7 và Chủ Nhật
+            $days_to_check = [2, 3, 4, 5, 6, 7, 1]; // 1 = Chủ Nhật
+            
+            foreach ($days_to_check as $index => $thu) {
                 $lich = $this->excelModel->layLichTheoThu($thu2, $ma_phong_ban, $thu);
                 if (!empty($lich)) {
-                    $ngay_offset = $thu - 2;
-                    $ngay_lam = date('Y-m-d', strtotime($thu2 . " +$ngay_offset days"));
+                    // ✅ Tính offset chính xác: index 0-6 tương ứng +0 đến +6 ngày
+                    $ngay_lam = date('Y-m-d', strtotime($thu2 . " +$index days"));
                     
                     $available_days[] = [
                         'thu' => $thu,
@@ -326,12 +337,12 @@ class LichTuanController {
         }
         exit;
     }
-    
     /**
      * Helper: Lấy tên thứ đầy đủ
      */
     private function getTenThuDayDu($thu) {
         $ten = [
+            1=> 'Chủ Nhật',
             2 => 'Thứ Hai',
             3 => 'Thứ Ba',
             4 => 'Thứ Tư',

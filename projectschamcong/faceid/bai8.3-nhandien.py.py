@@ -165,7 +165,7 @@ def mark_attendance(ma_nhan_vien, ho_ten):
                 return True
             
             # Nếu không sớm hơn và không muộn hơn
-            print(f"→ {ho_ten} - Giờ hiện tại nằm giữa giờ vào và giờ ra")
+            print(f"→ {ho_ten} - đã chấm công giờ vào")
             return False
         
     except Error as e:

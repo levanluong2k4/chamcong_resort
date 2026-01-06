@@ -51,27 +51,37 @@
             </a>
             <a href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=DoiLich&action=index" class="nav-item">
                 <i class="fas fa-calendar-alt"></i>
-                <span>Đổi ca làm việc</span>
+                <span>Lịch làm việc nhân viên</span>
             </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-file-invoice"></i>
-                <span>Đơn Xin Nghỉ</span>
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-users"></i>
-                <span>Nhân Viên Của Tôi</span>
-            </a>
+         
+           
             <a href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=ChamCong&action=index" class="nav-item">
                 <i class="fas fa-clock"></i>
                 <span>Chấm công</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=ThongKeCong&action=index" class="nav-item">
                 <i class="fas fa-chart-bar"></i>
-                <span>Báo Cáo Bộ Phận</span>
+                <span>Thống kê chấm công</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=profile&action=index" class="nav-item">
                 <i class="fas fa-user-circle"></i>
                 <span>Hồ Sơ Cá Nhân</span>
+            </a>
+            <a href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=duyetdon&action=index" class="nav-item">
+                <i class="fas fa-file-alt"></i>
+                <span>Duyệt Đơn</span>
+            </a>
+            <a href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=overtime&action=index" class="nav-item">
+                <i class="fas fa-clock"></i>
+                <span>Tăng ca</span>
+            </a>
+            <a href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=leave&action=index" class="nav-item">
+                <i class="fas fa-file-invoice"></i>
+                <span>Đơn Xin Nghỉ Phép</span>
+            </a>
+            <a href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/Router/router.php?controller=employee&action=index" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Nhân Viên Của Tôi</span>
             </a>
         </div>
     </div>
