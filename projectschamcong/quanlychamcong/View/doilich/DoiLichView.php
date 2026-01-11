@@ -7,19 +7,15 @@
     <title>Đổi Lịch & Đổi Ca Nhân Viên</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/View/css/basic.css">
     <link rel="stylesheet" href="/thuctap/chamcong_resort/projectschamcong/quanlychamcong/View/css/department.css">
 
-
-
     <style>
         body {
-
             min-height: 100vh;
             padding: 20px 0;
+            background: #f5f7fa;
         }
 
         .main-container {
@@ -30,7 +26,7 @@
         }
 
         .page-header {
-
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -55,6 +51,9 @@
             text-align: center;
             font-weight: 600;
             border: 1px solid #5568d3;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .calendar-table td {
@@ -64,20 +63,44 @@
             min-width: 100px;
         }
 
+        /* ✅ Chế độ kéo thả */
         .shift-badge {
             font-size: 11px;
-            padding: 6px 10px;
+            padding: 8px 10px;
             border-radius: 8px;
             display: block;
             margin: 4px 0;
-            cursor: pointer;
+            cursor: grab;
             transition: all 0.3s;
             position: relative;
+            user-select: none;
         }
 
-        .shift-badge:hover {
+        .shift-badge:active {
+            cursor: grabbing;
+        }
+
+        .shift-badge:hover:not(.disabled) {
             transform: scale(1.05);
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ✅ Đang kéo */
+        .shift-badge.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        /* ✅ Vùng thả hợp lệ */
+        .calendar-table td.drag-over {
+            background: #e3f2fd !important;
+            border: 3px dashed #2196F3 !important;
+        }
+
+        /* ✅ Vùng thả không hợp lệ */
+        .calendar-table td.drag-invalid {
+            background: #ffebee !important;
+            border: 3px dashed #f44336 !important;
         }
 
         .shift-badge.selected {
@@ -87,19 +110,22 @@
 
         .shift-badge.disabled {
             opacity: 0.5;
-            cursor: not-allowed;
+            cursor: not-allowed !important;
             background: #e9ecef !important;
             color: #6c757d !important;
         }
 
-        .badge-ca-1,
-        .badge-ca-5 {
+        .shift-badge.disabled:hover {
+            transform: none !important;
+        }
+
+        /* Badge màu theo ca */
+        .badge-ca-1, .badge-ca-5 {
             background: #fff3cd;
             color: #856404;
         }
 
-        .badge-ca-2,
-        .badge-ca-6 {
+        .badge-ca-2, .badge-ca-6 {
             background: #cfe2ff;
             color: #084298;
         }
@@ -119,8 +145,7 @@
             color: #721c24;
         }
 
-        .badge-ca-8,
-        .badge-ca-9 {
+        .badge-ca-8, .badge-ca-9 {
             background: #e2e3e5;
             color: #383d41;
         }
@@ -139,99 +164,74 @@
             z-index: 1;
         }
 
-        .shift-badge.nghi {
-            background: #ffc107 !important;
-            color: #000 !important;
-            font-weight: bold;
-            border: 2px dashed #ff9800;
-
-            /* Badge ca làm việc bình thường */
-            .shift-badge {
-                font-size: 11px;
-                padding: 8px 10px;
-                border-radius: 8px;
-                display: block;
-                margin: 4px 0;
-                cursor: pointer;
-                transition: all 0.3s;
-                position: relative;
-            }
-
-            /* ✅ Badge có thông tin nghỉ NHƯNG vẫn cho đổi */
-            .shift-badge:not(.disabled) {
-                cursor: pointer;
-            }
-
-            .shift-badge:not(.disabled):hover {
-                transform: scale(1.05);
-                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            }
-
-            /* ❌ Badge DISABLED - không cho đổi */
-            .shift-badge.disabled {
-                opacity: 0.5;
-                cursor: not-allowed !important;
-                background: #e9ecef !important;
-                color: #6c757d !important;
-            }
-
-            .shift-badge.disabled:hover {
-                transform: none !important;
-            }
-
-            /* Badge được chọn */
-            .shift-badge.selected {
-                border: 3px solid #ff6b6b;
-                box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-            }
-
-            /* Thông tin bổ sung (nghỉ lễ, nghỉ tuần) */
-            .shift-badge small.text-danger,
-            .shift-badge small.text-info {
-                font-weight: 600;
-                display: block;
-                margin-top: 4px;
-                padding-top: 4px;
-                border-top: 1px dashed rgba(0, 0, 0, 0.2);
-            }
-
+        /* OFF có thể chọn/kéo */
+        .shift-badge.off-selectable {
+            cursor: grab;
         }
 
-        .shift-badge.disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        .shift-badge.off-selectable:active {
+            cursor: grabbing;
         }
 
-        /* OFF có thể chọn */
         .shift-badge.off-selectable:hover {
             transform: scale(1.05);
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-            opacity: 0.9;
         }
 
         .shift-badge.off-selectable.selected {
             border: 3px solid #ff6b6b;
             box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
         }
+
+        /* Tooltip thông tin */
+        .shift-badge[title]:hover::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 5px;
+        }
+
+        /* Chế độ kéo thả badge */
+        .mode-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .mode-indicator i {
+            margin-right: 8px;
+        }
     </style>
 </head>
 
 <body>
+     <!-- Sidebar -->
+     <?php require_once __DIR__ . '/../component/navbar.php'; ?>
 
-
-    <?php require_once __DIR__ . '/../component/navbar.php'; ?>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Topbar -->
-        <?php require_once __DIR__ . '/../component/topbar.php'; ?>
-
-
-
-
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Topbar -->
+    <?php require_once __DIR__ . '/../component/topbar.php'; ?>
+    <div class="container-fluid main-container mt-4">
         <div class="page-header">
             <h2><i class="bi bi-arrow-left-right"></i> Đổi Lịch & Đổi Ca Nhân Viên</h2>
-            <p class="mb-0">Chọn 2 ca cùng thứ để hoán đổi</p>
+            <p class="mb-0">Kéo thả ca hoặc chọn 2 ca cùng thứ để hoán đổi</p>
         </div>
 
         <div class="p-4">
@@ -240,23 +240,20 @@
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Tháng</label>
                         <select id="thang_filter" class="form-select">
-                            <?php
-                            for ($i = 1; $i <= 12; $i++) {
-                                $selected = ($i == $thang) ? 'selected' : '';
-                                echo "<option value='$i' $selected>Tháng $i</option>";
-                            }
-                            ?>
+                            <?php for ($i = 1; $i <= 12; $i++): ?>
+                                <option value="<?= $i ?>" <?= $i == date('m') ? 'selected' : '' ?>>Tháng <?= $i ?></option>
+                            <?php endfor; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Năm</label>
                         <select id="nam_filter" class="form-select">
-                            <?php
-                            for ($i = $nam - 1; $i <= $nam + 1; $i++) {
-                                $selected = ($i == $nam) ? 'selected' : '';
-                                echo "<option value='$i' $selected>$i</option>";
-                            }
+                            <?php 
+                            $currentYear = date('Y');
+                            for ($i = $currentYear - 1; $i <= $currentYear + 1; $i++): 
                             ?>
+                                <option value="<?= $i ?>" <?= $i == $currentYear ? 'selected' : '' ?>><?= $i ?></option>
+                            <?php endfor; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -280,6 +277,9 @@
                     <button class="btn btn-secondary" onclick="huyChon()">
                         <i class="bi bi-x-circle"></i> Hủy Chọn
                     </button>
+                    <span class="text-muted ms-3">
+                        <i class="bi bi-info-circle"></i> Kéo thả ca để đổi nhanh hoặc click chọn 2 ca
+                    </span>
                 </div>
             </div>
 
@@ -290,10 +290,12 @@
                 </div>
             </div>
         </div>
-
     </div>
 
-    <input type="hidden" id="ma_phong_ban" value="<?= $ma_phong_ban ?>">
+
+   
+</div>
+    <input type="hidden" id="ma_phong_ban" value="<?= $ma_phong_ban ?? 1 ?>">
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -302,6 +304,8 @@
     <script>
         let selectedCells = [];
         let lichData = [];
+        let draggedElement = null;
+        let draggedData = null;
 
         $(document).ready(function() {
             loadWeeks();
@@ -312,46 +316,44 @@
         });
 
         function loadWeeks() {
-    const thang = $('#thang_filter').val();
-    const nam = $('#nam_filter').val();
+            const thang = $('#thang_filter').val();
+            const nam = $('#nam_filter').val();
 
-    $.post('router.php', {
-        controller: 'DoiLich',
-        action: 'getWeeksInMonth',
-        thang: thang,
-        nam: nam
-    }, function(res) {
-        if (res.success) {
-            let options = '<option value="">-- Chọn tuần --</option>';
+            $.post('router.php', {
+                controller: 'DoiLich',
+                action: 'getWeeksInMonth',
+                thang: thang,
+                nam: nam
+            }, function(res) {
+                if (res.success) {
+                    let options = '<option value="">-- Chọn tuần --</option>';
 
-            if (res.data && res.data.length > 0) {
-                const lastIndex = res.data.length - 1;
+                    if (res.data && res.data.length > 0) {
+                        const lastIndex = res.data.length - 1;
 
-                res.data.forEach((week, index) => {
-                    const start = new Date(week.ngay_bat_dau).toLocaleDateString('vi-VN');
-                    const end = new Date(week.ngay_ket_thuc).toLocaleDateString('vi-VN');
-                    const selected = index === lastIndex ? 'selected' : '';
+                        res.data.forEach((week, index) => {
+                            const start = new Date(week.ngay_bat_dau).toLocaleDateString('vi-VN');
+                            const end = new Date(week.ngay_ket_thuc).toLocaleDateString('vi-VN');
+                            const selected = index === lastIndex ? 'selected' : '';
 
-                    options += `
-                        <option value="${week.tuan}" ${selected}>
-                            Tuần ${week.tuan} (${start} - ${end})
-                        </option>
-                    `;
-                });
-            } else {
-                options += '<option value="" disabled>Không có lịch trong tháng này</option>';
-            }
+                            options += `
+                                <option value="${week.tuan}" ${selected}>
+                                    Tuần ${week.tuan} (${start} - ${end})
+                                </option>
+                            `;
+                        });
+                    } else {
+                        options += '<option value="" disabled>Không có lịch trong tháng này</option>';
+                    }
 
-            $('#tuan_filter').html(options);
+                    $('#tuan_filter').html(options);
 
-            // ✅🔥 QUAN TRỌNG: tự động load lịch
-            if (res.data && res.data.length > 0) {
-                loadLich();
-            }
+                    if (res.data && res.data.length > 0) {
+                        loadLich();
+                    }
+                }
+            }, 'json');
         }
-    }, 'json');
-}
-
 
         function loadLich() {
             const tuan = $('#tuan_filter').val();
@@ -364,7 +366,7 @@
                 return;
             }
 
-            $.post('router.php', { // ✅ Sửa
+            $.post('router.php', {
                 controller: 'DoiLich',
                 action: 'getLichTheoTuan',
                 tuan: tuan,
@@ -377,7 +379,7 @@
                     hienThiLich(res.data);
                 }
             }, 'json').fail(function(xhr) {
-                console.error('Response:', xhr.responseText); // ✅ Debug
+                console.error('Response:', xhr.responseText);
                 Swal.fire('Lỗi', 'Không thể tải lịch', 'error');
             });
         }
@@ -401,6 +403,8 @@
             });
 
             const sortedDates = Object.values(dates).sort((a, b) => new Date(a.ngay) - new Date(b.ngay));
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
             let html = '<div class="table-responsive"><table class="calendar-table">';
             html += '<thead><tr><th style="min-width:150px;">Nhân viên</th>';
@@ -421,6 +425,9 @@
 
                 sortedDates.forEach(d => {
                     const lich = lichMap[d.ngay];
+                    const ngayLam = new Date(d.ngay);
+                    ngayLam.setHours(0, 0, 0, 0);
+                    const isAfterToday = ngayLam > today;
 
                     if (!lich) {
                         html += '<td class="text-center text-muted">-</td>';
@@ -435,57 +442,61 @@
                     if (!lich.ma_ca) {
                         let offReason = '';
                         let offColor = '#6c757d';
-                        let canSwap = false; // ✅ Kiểm tra có thể đổi không
+                        let canSwap = false;
 
                         if (coNghiDon) {
-                            // ❌ Nghỉ phép theo đơn - KHÔNG được đổi
                             offReason = 'Nghỉ phép (đơn)';
                             offColor = '#ffc107';
                             canSwap = false;
                         } else if (coNghiLe) {
-                            // ✅ Nghỉ lễ - ĐƯỢC đổi
                             offReason = lich.ly_do_nghi_le || 'Nghỉ lễ';
                             offColor = '#dc3545';
-                            canSwap = !lich.da_qua; // Chỉ đổi nếu chưa qua ngày
+                            canSwap = isAfterToday;
                         } else if (coNghiTuan) {
-                            // ✅ Nghỉ phép tuần - ĐƯỢC đổi
                             offReason = lich.ly_do_nghi_tuan || 'Nghỉ phép tuần';
                             offColor = '#17a2b8';
-                            canSwap = !lich.da_qua; // Chỉ đổi nếu chưa qua ngày
+                            canSwap = isAfterToday;
                         } else {
                             offReason = 'Không có ca';
                             offColor = '#e9ecef';
-                            canSwap = false;
+                            canSwap = isAfterToday; // ✅ Cho phép đổi nếu > ngày hiện tại
                         }
 
-                        // ✅ Nếu được phép đổi → thêm onclick và ID
                         const offId = `off-${nv.ma_nhan_vien}-${d.ngay}`;
-                        const onclick = canSwap ? `onclick="chonOff('${offId}', ${nv.ma_nhan_vien}, '${d.ngay}', '${d.thu}')"` : '';
-                        const cursorStyle = canSwap ? 'cursor: pointer;' : 'cursor: not-allowed;';
-                        const hoverClass = canSwap ? 'off-selectable' : '';
+                        const draggable = canSwap ? 'draggable="true"' : '';
+                        const hoverClass = canSwap ? 'off-selectable' : 'disabled';
+                        const cursorStyle = canSwap ? 'cursor: grab;' : 'cursor: not-allowed;';
 
-                        html += `<td>
-                    <div class="shift-badge ${hoverClass}" 
-                         id="${offId}"
-                         ${onclick}
-                         title="${canSwap ? 'Click để chọn (đổi ca hoặc nhận ca)' : offReason}"
-                         style="background: ${offColor} !important; color: #fff !important; ${cursorStyle}">
-                        <strong><i class="bi bi-x-circle"></i> OFF</strong><br>
-                        <small>${offReason}</small>
-                    </div>
-                </td>`;
+                        html += `<td data-ngay="${d.ngay}" data-thu="${d.thu}" data-ma-nv="${nv.ma_nhan_vien}" class="drop-zone">
+                            <div class="shift-badge ${hoverClass}" 
+                                 id="${offId}"
+                                 ${draggable}
+                                 onclick="chonOff('${offId}', ${nv.ma_nhan_vien}, '${d.ngay}', '${d.thu}')"
+                                 title="${canSwap ? 'Kéo thả hoặc click để nhận ca' : offReason}"
+                                 data-type="OFF"
+                                 data-ma-nv="${nv.ma_nhan_vien}"
+                                 data-ngay="${d.ngay}"
+                                 data-thu="${d.thu}"
+                                 style="background: ${offColor} !important; color: #fff !important; ${cursorStyle}">
+                                <strong><i class="bi bi-x-circle"></i> OFF</strong><br>
+                                <small>${offReason}</small>
+                            </div>
+                        </td>`;
                         return;
                     }
 
                     // ✅ Có ca làm việc
-                    const isDisabled = lich.da_cham_cong == 1 || lich.da_qua == 1 || coNghiDon;
+                    const isDisabled = lich.da_cham_cong == 1 || !isAfterToday || coNghiDon;
                     const disabledClass = isDisabled ? 'disabled' : '';
+                    const draggable = isDisabled ? '' : 'draggable="true"';
 
                     let badgeInfo = '';
                     let badgeStyle = '';
 
                     if (lich.da_cham_cong == 1) {
                         badgeInfo = '<small class="text-success"><i class="bi bi-check-circle"></i> Đã chấm công</small>';
+                    } else if (!isAfterToday) {
+                        badgeInfo = '<small class="text-muted"><i class="bi bi-clock-history"></i> Đã qua ngày</small>';
                     } else if (coNghiDon) {
                         badgeInfo = '<small class="text-warning"><i class="bi bi-calendar-x"></i> Nghỉ phép</small>';
                         badgeStyle = 'border: 2px solid #ffc107;';
@@ -495,29 +506,216 @@
                         badgeInfo = `<small class="text-info"><i class="bi bi-calendar-week"></i> ${lich.ly_do_nghi_tuan || 'Nghỉ phép tuần'}</small>`;
                     }
 
-                    const onclick = isDisabled ? '' : `onclick="chonCa(${lich.ma_lich}, ${nv.ma_nhan_vien}, '${d.ngay}', '${d.thu}')"`;
-                    const titleText = isDisabled ? 'Không thể đổi ca' : 'Click để chọn';
+                    const titleText = isDisabled ? 'Không thể đổi ca' : 'Kéo thả hoặc click để đổi ca';
 
-                    html += `<td>
-                <div class="shift-badge badge-ca-${lich.ma_ca} ${disabledClass}" 
-                     id="cell-${lich.ma_lich}"
-                     ${onclick}
-                     title="${titleText}"
-                     style="${badgeStyle}">
-                    <strong>${lich.ten_ca}</strong><br>
-                    <small>${lich.gio_bat_dau} - ${lich.gio_ket_thuc}</small>
-                    ${badgeInfo ? '<br>' + badgeInfo : ''}
-                </div>
-            </td>`;
+                    html += `<td data-ngay="${d.ngay}" data-thu="${d.thu}" data-ma-nv="${nv.ma_nhan_vien}" class="drop-zone">
+                        <div class="shift-badge badge-ca-${lich.ma_ca} ${disabledClass}" 
+                             id="cell-${lich.ma_lich}"
+                             ${draggable}
+                             onclick="chonCa(${lich.ma_lich}, ${nv.ma_nhan_vien}, '${d.ngay}', '${d.thu}')"
+                             title="${titleText}"
+                             data-type="CA"
+                             data-ma-lich="${lich.ma_lich}"
+                             data-ma-nv="${nv.ma_nhan_vien}"
+                             data-ngay="${d.ngay}"
+                             data-thu="${d.thu}"
+                             style="${badgeStyle}">
+                            <strong>${lich.ten_ca}</strong><br>
+                            <small>${lich.gio_bat_dau} - ${lich.gio_ket_thuc}</small>
+                            ${badgeInfo ? '<br>' + badgeInfo : ''}
+                        </div>
+                    </td>`;
                 });
                 html += '</tr>';
             });
 
             html += '</tbody></table></div>';
             $('#lich-container').html(html);
+
+            // ✅ Gắn sự kiện kéo thả
+            initDragAndDrop();
         }
 
+        // ✅ Khởi tạo kéo thả
+        function initDragAndDrop() {
+            const badges = document.querySelectorAll('.shift-badge:not(.disabled)');
 
+            badges.forEach(badge => {
+                badge.addEventListener('dragstart', handleDragStart);
+                badge.addEventListener('dragend', handleDragEnd);
+            });
+
+            const dropZones = document.querySelectorAll('.drop-zone');
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', handleDragOver);
+                zone.addEventListener('dragleave', handleDragLeave);
+                zone.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            draggedData = {
+                type: e.target.getAttribute('data-type'),
+                ma_lich: e.target.getAttribute('data-ma-lich'),
+                ma_nhan_vien: parseInt(e.target.getAttribute('data-ma-nv')),
+                ngay: e.target.getAttribute('data-ngay'),
+                thu: e.target.getAttribute('data-thu'),
+                id: e.target.id
+            };
+
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                zone.classList.remove('drag-over', 'drag-invalid');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            const targetBadge = e.currentTarget.querySelector('.shift-badge');
+            
+            if (!targetBadge || targetBadge === draggedElement) {
+                return;
+            }
+
+            // Kiểm tra có thể thả không
+            const targetType = targetBadge.getAttribute('data-type');
+            const targetThu = e.currentTarget.getAttribute('data-thu');
+            const targetMaNv = parseInt(e.currentTarget.getAttribute('data-ma-nv'));
+            const targetDisabled = targetBadge.classList.contains('disabled');
+
+            const canDrop = !targetDisabled && 
+                            
+                           draggedData.ma_nhan_vien !== targetMaNv;
+
+            if (canDrop) {
+                e.currentTarget.classList.add('drag-over');
+                e.currentTarget.classList.remove('drag-invalid');
+            } else {
+                e.currentTarget.classList.add('drag-invalid');
+                e.currentTarget.classList.remove('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over', 'drag-invalid');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over', 'drag-invalid');
+
+            const targetBadge = e.currentTarget.querySelector('.shift-badge');
+            
+            if (!targetBadge || targetBadge === draggedElement) {
+                return;
+            }
+
+            const targetData = {
+                type: targetBadge.getAttribute('data-type'),
+                ma_lich: targetBadge.getAttribute('data-ma-lich'),
+                ma_nhan_vien: parseInt(targetBadge.getAttribute('data-ma-nv')),
+                ngay: targetBadge.getAttribute('data-ngay'),
+                thu: targetBadge.getAttribute('data-thu'),
+                id: targetBadge.id
+            };
+
+            // Kiểm tra điều kiện
+            const targetDisabled = targetBadge.classList.contains('disabled');
+            
+            if (targetDisabled) {
+                Swal.fire('Không thể đổi', 'Ô đích đã bị khóa', 'error');
+                return;
+            }
+
+          
+
+            if (draggedData.ma_nhan_vien === targetData.ma_nhan_vien) {
+                Swal.fire('Không thể đổi', 'Không thể đổi ca của cùng 1 nhân viên', 'error');
+                return;
+            }
+
+            // Thực hiện đổi ca
+            xuLyDoiCaDragDrop(draggedData, targetData);
+        }
+
+        function xuLyDoiCaDragDrop(ca1, ca2) {
+            let messageHtml = '';
+            if (ca1.type === 'CA' && ca2.type === 'CA') {
+                messageHtml = `Đổi ca giữa 2 nhân viên vào <strong>${ca1.thu}</strong>?`;
+            } else if (ca1.type === 'OFF' && ca2.type === 'CA') {
+                messageHtml = `Chuyển ca từ nhân viên có ca sang nhân viên OFF vào <strong>${ca1.thu}</strong>?`;
+            } else if (ca1.type === 'CA' && ca2.type === 'OFF') {
+                messageHtml = `Chuyển ca từ nhân viên có ca sang nhân viên OFF vào <strong>${ca1.thu}</strong>?`;
+            } else {
+                Swal.fire('Lỗi', 'Không thể đổi giữa 2 ô OFF', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Xác nhận đổi ca',
+                html: messageHtml,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    xuLyDoiCaAPI(ca1, ca2);
+                }
+            });
+        }
+
+        function xuLyDoiCaAPI(ca1, ca2) {
+            Swal.fire({
+                title: 'Đang xử lý...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.post('router.php', {
+                controller: 'DoiLich',
+                action: 'doiCa',
+                ca1: JSON.stringify(ca1),
+                ca2: JSON.stringify(ca2)
+            }, function(res) {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công!',
+                        text: res.message,
+                        timer: 2000
+                    }).then(() => {
+                        huyChon();
+                        loadLich();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi!',
+                        text: res.message
+                    });
+                }
+            }, 'json').fail(function(xhr) {
+                console.error('Response:', xhr.responseText);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi!',
+                    text: 'Không thể kết nối đến server'
+                });
+            });
+        }
+
+        // ✅ Chọn ca bằng click (giữ nguyên)
         function chonCa(maLich, maNhanVien, ngay, thu) {
             const cell = $(`#cell-${maLich}`);
 
@@ -531,10 +729,7 @@
                 }
 
                 if (selectedCells.length === 1) {
-                    if (selectedCells[0].thu !== thu) {
-                        Swal.fire('Thông báo', 'Chỉ được đổi ca cùng thứ trong tuần', 'warning');
-                        return;
-                    }
+                   
 
                     if (selectedCells[0].ma_nhan_vien === maNhanVien) {
                         Swal.fire('Thông báo', 'Không thể đổi ca của cùng 1 nhân viên', 'warning');
@@ -545,7 +740,7 @@
                 cell.addClass('selected');
                 selectedCells.push({
                     id: `cell-${maLich}`,
-                    type: 'CA', // ✅ Đánh dấu là CA
+                    type: 'CA',
                     ma_lich: maLich,
                     ma_nhan_vien: maNhanVien,
                     ngay: ngay,
@@ -556,17 +751,45 @@
             $('#so-luong-chon').text(selectedCells.length);
             $('#btn-doi-ca').prop('disabled', selectedCells.length !== 2);
         }
-        // function huyChon() {
-        //     selectedCells.forEach(c => {
-        //         $(`#cell-${c.ma_lich}`).removeClass('selected');
-        //     });
-        //     selectedCells = [];
-        //     $('#so-luong-chon').text(0);
-        //     $('#btn-doi-ca').prop('disabled', true);
-        // }
+
+        function chonOff(offId, maNhanVien, ngay, thu) {
+            const cell = $(`#${offId}`);
+
+            if (cell.hasClass('selected')) {
+                cell.removeClass('selected');
+                selectedCells = selectedCells.filter(c => c.id != offId);
+            } else {
+                if (selectedCells.length >= 2) {
+                    Swal.fire('Thông báo', 'Chỉ được chọn tối đa 2 ca để đổi', 'warning');
+                    return;
+                }
+
+                if (selectedCells.length === 1) {
+                  
+
+                    if (selectedCells[0].ma_nhan_vien === maNhanVien) {
+                        Swal.fire('Thông báo', 'Không thể đổi ca của cùng 1 nhân viên', 'warning');
+                        return;
+                    }
+                }
+
+                cell.addClass('selected');
+                selectedCells.push({
+                    id: offId,
+                    type: 'OFF',
+                    ma_lich: null,
+                    ma_nhan_vien: maNhanVien,
+                    ngay: ngay,
+                    thu: thu
+                });
+            }
+
+            $('#so-luong-chon').text(selectedCells.length);
+            $('#btn-doi-ca').prop('disabled', selectedCells.length !== 2);
+        }
+
         function huyChon() {
             selectedCells.forEach(c => {
-                // ✅ Xóa selected cho cả CA và OFF
                 if (c.type === 'CA') {
                     $(`#cell-${c.ma_lich}`).removeClass('selected');
                 } else if (c.type === 'OFF') {
@@ -578,7 +801,6 @@
             $('#btn-doi-ca').prop('disabled', true);
         }
 
-
         function xacNhanDoiCa() {
             if (selectedCells.length !== 2) {
                 Swal.fire('Thông báo', 'Vui lòng chọn đúng 2 ca để đổi', 'warning');
@@ -588,10 +810,9 @@
             const ca1 = selectedCells[0];
             const ca2 = selectedCells[1];
 
-            // ✅ Xác định loại đổi
             let messageHtml = '';
             if (ca1.type === 'CA' && ca2.type === 'CA') {
-                messageHtml = `Đổi ca giữa 2 nhân viên vào <strong>${ca1.thu}</strong>?`;
+                messageHtml = `Đổi ca giữa 2 nhân viên </strong>?`;
             } else if (ca1.type === 'OFF' && ca2.type === 'CA') {
                 messageHtml = `Chuyển ca từ nhân viên có ca sang nhân viên OFF vào <strong>${ca1.thu}</strong>?<br>
                       <small class="text-muted">(Nhân viên có ca sẽ nghỉ, nhân viên OFF sẽ nhận ca)</small>`;
@@ -612,11 +833,10 @@
                 cancelButtonText: 'Hủy'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    xuLyDoiCa();
+                    xuLyDoiCaAPI(ca1, ca2);
                 }
             });
         }
-
         function xuLyDoiCa() {
             const ca1 = selectedCells[0];
             const ca2 = selectedCells[1];
@@ -677,19 +897,7 @@
                     return;
                 }
 
-                // Nếu đã chọn 1 ca, kiểm tra cùng thứ
-                if (selectedCells.length === 1) {
-                    if (selectedCells[0].thu !== thu) {
-                        Swal.fire('Thông báo', 'Chỉ được đổi ca cùng thứ trong tuần', 'warning');
-                        return;
-                    }
-
-                    // Kiểm tra không phải cùng nhân viên
-                    if (selectedCells[0].ma_nhan_vien === maNhanVien) {
-                        Swal.fire('Thông báo', 'Không thể đổi ca của cùng 1 nhân viên', 'warning');
-                        return;
-                    }
-                }
+               
 
                 cell.addClass('selected');
                 selectedCells.push({
